@@ -1,8 +1,12 @@
 # Suburban Integrated Services Limited — Website
 
+[![CI](https://github.com/StainTheSpiritMAN/Daniel-project/actions/workflows/ci.yml/badge.svg)](https://github.com/StainTheSpiritMAN/Daniel-project/actions/workflows/ci.yml)
+
 Corporate website for **Suburban Integrated Services Limited** (IT, Power & Energy Consulting).
 Monorepo with a **NestJS** API and a **Next.js** front-end. All configuration is driven
 by environment variables.
+
+Repository: <https://github.com/StainTheSpiritMAN/Daniel-project>
 
 ```
 suburban/
@@ -20,6 +24,10 @@ suburban/
 ## Setup
 
 ```bash
+# 0. Clone the repository
+git clone https://github.com/StainTheSpiritMAN/Daniel-project.git
+cd Daniel-project
+
 # 1. Install all workspace dependencies
 npm install
 
@@ -104,3 +112,14 @@ Imagery extracted from the profile lives in `apps/web/public/`:
 
 - `public/images/` — hero/section photos (`hero-team`, `energy-platform`, `refinery`, `tools-blueprint`)
 - `public/clients/` — client logo tiles (`client-01.jpg` … `client-11.jpg`), rendered as a logo wall on the home and projects pages
+
+## Continuous Integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull
+request to `main`. It installs dependencies with `npm ci`, generates the Prisma client,
+and builds both the API and the web app. No database is required for the build.
+
+## License
+
+Proprietary — © Suburban Integrated Services Limited. All rights reserved.
+See [LICENSE](LICENSE).
