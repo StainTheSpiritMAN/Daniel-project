@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import fitz; print\\('pymupdf available'\\)\")",
+      "Bash(python3 -c \"import pypdf; print\\('pypdf available'\\)\")",
+      "Bash(pdfinfo Suburban_Integrated_Services_Limited_Corporate_Profile_1776405484.pdf)",
+      "Bash(pdftotext Suburban_Integrated_Services_Limited_Corporate_Profile_1776405484.pdf -)",
+      "Bash(pdftoppm -png -r 100 \"/Users/mac/Projects/suburban/Suburban_Integrated_Services_Limited_Corporate_Profile_1776405484.pdf\" page)",
+      "Bash(pdftoppm -png -r 200 -f 1 -l 6 \"/Users/mac/Projects/suburban/Suburban_Integrated_Services_Limited_Corporate_Profile_1776405484.pdf\" hd)",
+      "Bash(npm -v)",
+      "Bash(grep -v '^$')",
+      "Bash(psql -d postgres -c \"select current_user;\")",
+      "Bash(createdb suburban *)",
+      "Bash(node apps/api/dist/main.js)",
+      "Bash(echo \"pid $!\")",
+      "Bash(curl -s http://localhost:4000/api/health)",
+      "Bash(curl -s -X POST http://localhost:4000/api/contact -H 'Content-Type: application/json' -d '{\"name\":\"Jane Test\",\"email\":\"jane@example.com\",\"phone\":\"08012345678\",\"service\":\"Power Solutions & Renewable Energy\",\"subject\":\"Solar quote\",\"message\":\"I would like a quote for a 5kva solar system.\"}')",
+      "Bash(curl -s -X POST http://localhost:4000/api/contact -H 'Content-Type: application/json' -d '{\"name\":\"X\",\"email\":\"bad\",\"message\":\"hi\"}')",
+      "Bash(curl -s -X POST http://localhost:4000/api/newsletter/subscribe -H 'Content-Type: application/json' -d '{\"email\":\"sub@example.com\"}')",
+      "Bash(psql -d suburban -tA -c \"select name,email,service from contact_messages;\")",
+      "Bash(psql -d suburban -tA -c \"select email from newsletter_subscribers;\")",
+      "Bash(kill 35797)",
+      "Bash(npx next *)",
+      "Bash(pdfimages -list \"/Users/mac/Projects/suburban/Suburban_Integrated_Services_Limited_Corporate_Profile_1776405484.pdf\")",
+      "Bash(lsof -nP -iTCP:3001 -sTCP:LISTEN)",
+      "Bash(echo \"api pid $!\")",
+      "Bash(echo \"web pid $!\")",
+      "Bash(lsof -nP -iTCP:4000 -sTCP:LISTEN)",
+      "Bash(lsof -nP -iTCP:3005 -sTCP:LISTEN)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/api/health)",
+      "Bash(echo \"API health -> $\\(curl -s -o /dev/null -w '%{http_code}' http://localhost:4000/api/health\\)\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:3005/)",
+      "Bash(git config *)",
+      "Bash(git ls-remote *)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(grep -E '\\\\.env$|\\\\.env\\\\.local|node_modules|\\\\.pdf')"
+    ]
+  }
+}
