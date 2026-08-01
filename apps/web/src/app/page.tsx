@@ -34,12 +34,12 @@ export default function HomePage() {
           preload="metadata"
           poster="/video/lagos-skyline-hero-poster.jpg"
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 h-full w-full object-cover"
         >
           <source src="/video/lagos-skyline-hero.webm" type="video/webm" />
           <source src="/video/lagos-skyline-hero.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/95 via-charcoal-900/80 to-charcoal-900/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/85 via-charcoal-900/55 to-charcoal-900/15" />
         <div className="absolute inset-0 opacity-20 [background:radial-gradient(circle_at_top_right,theme(colors.gold.500),transparent_55%)]" />
         <div className="absolute -right-24 top-1/2 hidden h-80 w-80 -translate-y-1/2 rounded-full border-[40px] border-gold/10 lg:block" />
         <div className="container relative grid gap-12 py-20 md:py-28 lg:grid-cols-2 lg:items-center">
