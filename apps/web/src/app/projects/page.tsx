@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
 import { ClientLogos } from '@/components/ClientLogos';
-import { projects } from '@/data/company';
+import { SectionHeading } from '@/components/SectionHeading';
+import { projectGallery, projects } from '@/data/company';
 
 export const metadata: Metadata = {
   title: 'Projects & Clientele',
@@ -50,8 +52,41 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      {/* Clients */}
+      {/* Gallery */}
       <section className="section bg-charcoal-50/60">
+        <div className="container">
+          <SectionHeading
+            center
+            eyebrow="From the Field"
+            title="Our work in pictures"
+            subtitle="Real installations and training engagements delivered by our team."
+          />
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {projectGallery.map((photo) => (
+              <figure
+                key={photo.src}
+                className="group relative aspect-[4/3] overflow-hidden rounded-xl shadow-sm"
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                  className="object-cover transition duration-300 group-hover:scale-105"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal-900/85 to-transparent p-4 pt-10">
+                  <span className="text-sm font-semibold text-white">
+                    {photo.caption}
+                  </span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Clients */}
+      <section className="section">
         <div className="container text-center">
           <span className="eyebrow">Our Clients</span>
           <h2 className="heading">Trusted by leading organizations</h2>

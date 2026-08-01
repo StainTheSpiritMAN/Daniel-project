@@ -108,6 +108,8 @@ export type Service = {
   title: string;
   summary: string;
   items: string[];
+  image: string;
+  imageAlt: string;
 };
 
 export const services: Service[] = [
@@ -123,6 +125,8 @@ export const services: Service[] = [
       'Video Door Bells & Smart Lock Systems',
       'Intercom and Communication Systems',
     ],
+    image: '/images/products/smart-lock-keypad-glass-door.jpg',
+    imageAlt: 'Smart keypad door lock installed on a modern glass door',
   },
   {
     slug: 'power-solutions-renewable-energy',
@@ -136,6 +140,8 @@ export const services: Service[] = [
       'Solar Street Lighting Systems for public and private lighting needs',
       'Rural Electrification Projects to extend power to under-served areas',
     ],
+    image: '/images/projects/solar-inverter-installation.jpg',
+    imageAlt: 'Hybrid solar inverter and lithium battery installation by Suburban Integrated Services',
   },
   {
     slug: 'professional-training-capacity-building',
@@ -147,6 +153,8 @@ export const services: Service[] = [
       'Community Sensitization & Empowerment Workshops',
       'Customized Corporate Training for Organizations',
     ],
+    image: '/images/training/hse-training-session.jpg',
+    imageAlt: 'HSE lock-out/tag-out training session delivered by Suburban Integrated Services',
   },
   {
     slug: 'it-general-consulting',
@@ -159,6 +167,8 @@ export const services: Service[] = [
       'Maintenance Plans and Lifecycle Support',
       'Technical Support Services',
     ],
+    image: '/images/projects/structured-cabling-rack.jpg',
+    imageAlt: 'Structured cabling and network rack installation',
   },
 ];
 
@@ -185,6 +195,71 @@ export const projects: Project[] = [
   { title: 'Designing of 45,000 / 32,000 / 20,000 litre steel water storage tanks', client: 'MoPPU Umuahia', year: '2025' },
   { title: 'Recharging of fire extinguisher bottles', client: 'MoPPU Umuahia', year: '2025' },
   { title: 'Design, purchase & installation of 5kva inverter / solar panels', client: 'Stella Maris College', year: '2025' },
+];
+
+export type GalleryPhoto = {
+  src: string;
+  alt: string;
+  caption: string;
+};
+
+/** Real photos from delivered projects and training engagements. */
+export const projectGallery: GalleryPhoto[] = [
+  {
+    src: '/images/projects/rooftop-solar-array.jpg',
+    alt: 'Rooftop solar panel array on a commercial building',
+    caption: 'Rooftop solar array installation',
+  },
+  {
+    src: '/images/projects/solar-inverter-installation.jpg',
+    alt: 'Wall-mounted charge controllers, hybrid inverter, and lithium battery towers',
+    caption: 'Hybrid solar inverter & lithium battery installation',
+  },
+  {
+    src: '/images/projects/inverter-bank-installation.jpg',
+    alt: 'Bank of inverters and battery cabinets in a power room',
+    caption: 'Multi-inverter power bank build-out',
+  },
+  {
+    src: '/images/projects/inverter-battery-room.jpg',
+    alt: 'Inverter wall units with floor-standing battery cabinets during commissioning',
+    caption: 'Inverter & battery bank commissioning',
+  },
+  {
+    src: '/images/projects/structured-cabling-rack.jpg',
+    alt: 'Structured cabling patch panels and network switches in server racks',
+    caption: 'Structured cabling & network infrastructure',
+  },
+  {
+    src: '/images/projects/av-equipment-installation.jpg',
+    alt: 'Technicians assembling audio-visual and electronic equipment on site',
+    caption: 'On-site AV & electronics installation for an oil & gas client',
+  },
+  {
+    src: '/images/projects/computer-training-lab.jpg',
+    alt: 'Computer-based test centre with rows of networked workstations',
+    caption: 'CBT centre design & networking',
+  },
+  {
+    src: '/images/training/hse-training-session.jpg',
+    alt: 'HSE trainer presenting hazardous energy sources for lock-out/tag-out',
+    caption: 'HSE lock-out/tag-out training session',
+  },
+  {
+    src: '/images/training/corporate-training-workshop.jpg',
+    alt: 'Facilitator addressing participants at a corporate training workshop',
+    caption: 'Corporate HSE training workshop',
+  },
+  {
+    src: '/images/training/hse-training-participants.jpg',
+    alt: 'Engineers taking notes during an HSE capacity-building workshop',
+    caption: 'Capacity-building workshop for ministry engineers',
+  },
+  {
+    src: '/images/team/installation-team.jpg',
+    alt: 'Suburban installation team in safety vests in front of a completed inverter bank',
+    caption: 'Our installation team on a completed power project',
+  },
 ];
 
 export const clients: string[] = [

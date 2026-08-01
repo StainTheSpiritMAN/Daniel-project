@@ -26,15 +26,20 @@ export default function HomePage() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-charcoal-900 text-white">
-        <Image
-          src="/images/hero-team.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-20"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900 via-charcoal-900/95 to-charcoal-900/70" />
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/video/lagos-skyline-hero-poster.jpg"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+        >
+          <source src="/video/lagos-skyline-hero.webm" type="video/webm" />
+          <source src="/video/lagos-skyline-hero.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/95 via-charcoal-900/80 to-charcoal-900/40" />
         <div className="absolute inset-0 opacity-20 [background:radial-gradient(circle_at_top_right,theme(colors.gold.500),transparent_55%)]" />
         <div className="absolute -right-24 top-1/2 hidden h-80 w-80 -translate-y-1/2 rounded-full border-[40px] border-gold/10 lg:block" />
         <div className="container relative grid gap-12 py-20 md:py-28 lg:grid-cols-2 lg:items-center">
@@ -152,28 +157,47 @@ export default function HomePage() {
       {/* Why choose us */}
       <section className="section bg-charcoal-50/60">
         <div className="container">
-          <SectionHeading
-            center
-            eyebrow="Why Choose Us"
-            title="A partner you can rely on"
-          />
-          <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {whyChooseUs.map((point) => (
-              <div
-                key={point.title}
-                className="flex gap-3 rounded-xl border border-charcoal-100 bg-white p-5"
-              >
-                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-50 text-gold-600">
-                  <CheckIcon className="h-4 w-4" />
-                </span>
-                <div>
-                  <h3 className="font-bold text-charcoal-900">{point.title}</h3>
-                  <p className="mt-1 text-sm text-charcoal-700">
-                    {point.description}
-                  </p>
-                </div>
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-lg lg:aspect-auto lg:h-full lg:min-h-[26rem]">
+              <Image
+                src="/images/team/installation-team.jpg"
+                alt="Suburban installation team in front of a completed inverter bank"
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-charcoal-900/80 to-transparent p-5">
+                <p className="text-sm font-semibold text-white">
+                  Our installation team on a completed power project
+                </p>
               </div>
-            ))}
+            </div>
+            <div>
+              <SectionHeading
+                eyebrow="Why Choose Us"
+                title="A partner you can rely on"
+              />
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {whyChooseUs.map((point) => (
+                  <div
+                    key={point.title}
+                    className="flex gap-3 rounded-xl border border-charcoal-100 bg-white p-5"
+                  >
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-50 text-gold-600">
+                      <CheckIcon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <h3 className="font-bold text-charcoal-900">
+                        {point.title}
+                      </h3>
+                      <p className="mt-1 text-sm text-charcoal-700">
+                        {point.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

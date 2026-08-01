@@ -15,7 +15,7 @@ export default function ServicesPage() {
     <>
       <section className="relative overflow-hidden bg-charcoal-900 py-16 text-white md:py-20">
         <Image
-          src="/images/energy-platform.jpg"
+          src="/images/projects/rooftop-solar-array.jpg"
           alt=""
           fill
           sizes="100vw"
@@ -57,11 +57,20 @@ export default function ServicesPage() {
                   </p>
                 </div>
                 <div
-                  className={`rounded-2xl border border-charcoal-100 bg-charcoal-50/50 p-8 ${
+                  className={`overflow-hidden rounded-2xl border border-charcoal-100 bg-charcoal-50/50 ${
                     reversed ? 'lg:order-1' : ''
                   }`}
                 >
-                  <ul className="space-y-3">
+                  <div className="relative aspect-video">
+                    <Image
+                      src={service.image}
+                      alt={service.imageAlt}
+                      fill
+                      sizes="(min-width: 1024px) 50vw, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                  <ul className="space-y-3 p-8">
                     {service.items.map((item) => (
                       <li key={item} className="flex gap-3">
                         <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700">

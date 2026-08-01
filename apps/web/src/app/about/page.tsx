@@ -58,8 +58,8 @@ export default function AboutPage() {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-lg">
             <Image
-              src="/images/refinery.jpg"
-              alt="Industrial energy infrastructure"
+              src="/images/projects/inverter-bank-installation.jpg"
+              alt="Inverter and battery bank installation delivered by our engineers"
               fill
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover"

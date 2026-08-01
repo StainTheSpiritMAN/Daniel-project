@@ -31,3 +31,6 @@ next-env.d.ts
 
 # large source brochure (32MB) — kept out of git; imagery already extracted into apps/web/public
 *.pdf
+
+# raw media masters from the client (4K video + original photos) — optimized web copies live in apps/web/public
+files/
