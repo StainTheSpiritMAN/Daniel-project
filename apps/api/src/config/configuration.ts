@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+
 /**
  * Centralised, typed access to environment configuration.
  * Every value the app needs is derived from process.env here so that
@@ -8,7 +10,22 @@ export interface AppConfig {
   port: number;
   globalPrefix: string;
   corsOrigins: string[];
-  adminApiKey: string;
+  auth: {
+    accessSecret: string;
+    refreshSecret: string;
+    accessTtlSeconds: number;
+    refreshTtlSeconds: number;
+    cookieSecure: boolean;
+    cookieDomain: string;
+  };
+  uploads: {
+    dir: string;
+    publicPath: string;
+  };
+  web: {
+    url: string;
+    revalidateSecret: string;
+  };
   database: {
     url: string;
   };
@@ -41,7 +58,28 @@ export default (): AppConfig => ({
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean),
-  adminApiKey: process.env.ADMIN_API_KEY ?? '',
+  auth: {
+    accessSecret: process.env.JWT_ACCESS_SECRET ?? '',
+    refreshSecret: process.env.JWT_REFRESH_SECRET ?? '',
+    accessTtlSeconds: toNumber(process.env.JWT_ACCESS_TTL_SECONDS, 15 * 60),
+    refreshTtlSeconds: toNumber(
+      process.env.JWT_REFRESH_TTL_SECONDS,
+      7 * 24 * 60 * 60,
+    ),
+    cookieSecure: toBool(
+      process.env.COOKIE_SECURE,
+      process.env.NODE_ENV === 'production',
+    ),
+    cookieDomain: process.env.COOKIE_DOMAIN ?? '',
+  },
+  uploads: {
+    dir: resolve(process.env.UPLOAD_DIR ?? './uploads'),
+    publicPath: '/uploads',
+  },
+  web: {
+    url: (process.env.WEB_URL ?? 'http://localhost:3000').replace(/\/$/, ''),
+    revalidateSecret: process.env.REVALIDATE_SECRET ?? '',
+  },
   database: {
     url: process.env.DATABASE_URL ?? '',
   },

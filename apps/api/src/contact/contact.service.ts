@@ -13,7 +13,10 @@ export class ContactService {
     private readonly mail: MailService,
   ) {}
 
-  async create(dto: CreateContactDto) {
+  async create(dto: CreateContactDto, meta: { ip?: string; userAgent?: string } = {}) {
+    // Honeypot tripped: pretend success so the bot learns nothing.
+    if (dto.website) return { id: null, createdAt: new Date() };
+
     const message = await this.prisma.contactMessage.create({
       data: {
         name: dto.name,
@@ -22,6 +25,8 @@ export class ContactService {
         subject: dto.subject,
         service: dto.service,
         message: dto.message,
+        ip: meta.ip,
+        userAgent: meta.userAgent,
       },
     });
 
@@ -65,6 +70,10 @@ export class ContactService {
     const message = await this.prisma.contactMessage.findUnique({ where: { id } });
     if (!message) throw new NotFoundException('Contact message not found.');
     return message;
+  }
+
+  countUnread() {
+    return this.prisma.contactMessage.count({ where: { status: MessageStatus.NEW } });
   }
 
   /** Admin: change the workflow status of a submission. */

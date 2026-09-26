@@ -37,4 +37,10 @@ export class CreateContactDto {
   @MinLength(10)
   @MaxLength(5000)
   message!: string;
+
+  /** Honeypot: hidden from people, so anything here means a bot filled the form. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  website?: string;
 }

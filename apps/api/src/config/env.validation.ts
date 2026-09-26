@@ -1,10 +1,10 @@
 /**
  * Lightweight startup validation for required env vars.
  * Runs via ConfigModule's `validate` hook before the app boots so that a
- * missing DATABASE_URL fails fast with a clear message rather than at first query.
+ * missing DATABASE_URL or JWT secret fails fast with a clear message rather than at first query.
  */
 export function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
-  const required = ['DATABASE_URL'];
+  const required = ['DATABASE_URL', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'];
   const missing = required.filter((key) => {
     const value = config[key];
     return value === undefined || value === '';

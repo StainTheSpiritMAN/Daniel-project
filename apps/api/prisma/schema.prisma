@@ -7,6 +7,215 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Auth & audit ────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+/// Staff accounts that can sign in to the /admin dashboard.
+model User {
+  id                 String         @id @default(cuid())
+  email              String         @unique
+  passwordHash       String
+  name               String
+  role               Role           @default(EDITOR)
+  isActive           Boolean        @default(true)
+  lastLoginAt        DateTime?
+  failedLoginCount   Int            @default(0)
+  lockedUntil        DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  refreshTokens      RefreshToken[]
+  uploads            Media[]
+  auditLogs          AuditLog[]
+
+  @@map("users")
+}
+
+/// Hashed refresh tokens. All tokens issued from one login share a `family`;
+/// presenting an already-used token revokes the whole family (reuse detection).
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  family    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([family])
+  @@map("refresh_tokens")
+}
+
+/// Append-only record of changes made through the admin dashboard.
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  diff      Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ─── Media ───────────────────────────────────────────────────────────────────
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+/// An uploaded file plus its generated renditions (see `variants`).
+model Media {
+  id           String    @id @default(cuid())
+  filename     String
+  path         String    @unique
+  mimeType     String
+  kind         MediaKind
+  alt          String    @default("")
+  width        Int?
+  height       Int?
+  sizeBytes    Int
+  /// { thumb|md|lg: { path, width, height, webp? } }
+  variants     Json      @default("{}")
+  uploadedById String?
+  uploadedBy   User?     @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  services      Service[]
+  galleryPhotos GalleryPhoto[]
+  clients       Client[]
+  teamMembers   TeamMember[]
+
+  @@index([kind])
+  @@map("media")
+}
+
+// ─── Content collections ─────────────────────────────────────────────────────
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Service {
+  id        String        @id @default(cuid())
+  slug      String        @unique
+  title     String
+  summary   String
+  items     String[]
+  imageId   String?
+  image     Media?        @relation(fields: [imageId], references: [id], onDelete: Restrict)
+  status    ContentStatus @default(DRAFT)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("services")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  client      String
+  year        String
+  description String?
+  status      ContentStatus @default(DRAFT)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("projects")
+}
+
+model GalleryPhoto {
+  id        String        @id @default(cuid())
+  imageId   String
+  image     Media         @relation(fields: [imageId], references: [id], onDelete: Restrict)
+  caption   String
+  status    ContentStatus @default(DRAFT)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("gallery_photos")
+}
+
+model Client {
+  id         String        @id @default(cuid())
+  name       String
+  logoId     String?
+  logo       Media?        @relation(fields: [logoId], references: [id], onDelete: Restrict)
+  websiteUrl String?
+  status     ContentStatus @default(DRAFT)
+  sortOrder  Int           @default(0)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("clients")
+}
+
+model TeamMember {
+  id        String        @id @default(cuid())
+  name      String
+  role      String
+  bio       String[]
+  photoId   String?
+  photo     Media?        @relation(fields: [photoId], references: [id], onDelete: Restrict)
+  status    ContentStatus @default(DRAFT)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("team_members")
+}
+
+model CoreValue {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  status      ContentStatus @default(DRAFT)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("core_values")
+}
+
+model WhyPoint {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  status      ContentStatus @default(DRAFT)
+  sortOrder   Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("why_points")
+}
+
+/// Singleton content blocks (company details, hero, page copy, SEO …),
+/// one row per key. `value` is validated per key in the API.
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+// ─── Intake ──────────────────────────────────────────────────────────────────
+
 /// Submissions from the website "Contact Us" form.
 model ContactMessage {
   id        String        @id @default(cuid())
@@ -17,6 +226,8 @@ model ContactMessage {
   service   String?
   message   String
   status    MessageStatus @default(NEW)
+  ip        String?
+  userAgent String?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
@@ -27,9 +238,10 @@ model ContactMessage {
 
 /// Newsletter / mailing-list subscriptions.
 model NewsletterSubscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id             String    @id @default(cuid())
+  email          String    @unique
+  unsubscribedAt DateTime?
+  createdAt      DateTime  @default(now())
 
   @@map("newsletter_subscribers")
 }

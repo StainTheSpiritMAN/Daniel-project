@@ -34,3 +34,6 @@ next-env.d.ts
 
 # raw media masters from the client (4K video + original photos) — optimized web copies live in apps/web/public
 files/
+
+# CMS uploads (live on the server disk, backed up separately)
+apps/api/uploads/
