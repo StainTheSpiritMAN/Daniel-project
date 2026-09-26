@@ -180,6 +180,48 @@ function FieldInput({
       );
     }
 
+    case 'select':
+      return (
+        <div>
+          <Label field={field} />
+          <select className={`adm-input ${invalid}`} value={(value as string) ?? ''} onChange={(e) => onChange(e.target.value)}>
+            {field.options.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <Help field={field} error={error} />
+        </div>
+      );
+
+    case 'color': {
+      const hex = (value as string) ?? '';
+      const valid = /^#[0-9a-f]{6}$/i.test(hex);
+      return (
+        <div>
+          <Label field={field} />
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              aria-label={`${field.label} picker`}
+              className="h-10 w-14 cursor-pointer rounded border border-charcoal-100 bg-white p-1"
+              value={valid ? hex : '#000000'}
+              onChange={(e) => onChange(e.target.value.toUpperCase())}
+            />
+            <input
+              className={`adm-input w-32 font-mono uppercase ${invalid}`}
+              value={hex}
+              placeholder="#E0A500"
+              maxLength={7}
+              onChange={(e) => onChange(e.target.value)}
+            />
+          </div>
+          <Help field={field} error={error} />
+        </div>
+      );
+    }
+
     case 'media':
       return (
         <div>

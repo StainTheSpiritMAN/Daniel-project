@@ -1,4 +1,5 @@
 /** Shapes of CMS content as returned by the public API (no framework imports). */
+import type { ThemeSetting } from './theme';
 
 export type CmsMedia = {
   id: string;
@@ -7,7 +8,11 @@ export type CmsMedia = {
   width: number | null;
   height: number | null;
   mimeType: string;
-  variants: { poster?: string };
+  variants: {
+    poster?: string;
+    thumb?: { path: string; webp?: string };
+    icon?: Record<string, string>;
+  };
 };
 
 type Status = { id: string };
@@ -80,4 +85,6 @@ export type Settings = {
   contactPage: { metaDescription?: string; header: Heading; intro: TitleBody };
   cta: { title: string; body: string; primaryCta: Link; secondaryCta: Link };
   seo: { defaultTitle: string; defaultDescription: string; keywords: string[]; ogImageId?: string };
+  theme: ThemeSetting;
+  branding: { logoId?: string; logoDarkId?: string; iconId?: string };
 };

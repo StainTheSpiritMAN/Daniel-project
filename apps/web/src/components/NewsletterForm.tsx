@@ -38,7 +38,7 @@ export function NewsletterForm() {
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-charcoal-900 transition hover:bg-gold-600 disabled:opacity-60"
+          className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-on-gold transition hover:bg-gold-600 disabled:opacity-60"
         >
           {status === 'loading' ? '…' : 'Join'}
         </button>

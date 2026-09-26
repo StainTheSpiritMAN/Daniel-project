@@ -9,7 +9,7 @@ export function ServiceCard({ service }: { service: Service }) {
       href={`/services#${service.slug}`}
       className="group flex flex-col rounded-xl border border-charcoal-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gold-200 hover:shadow-lg"
     >
-      <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-gold-50 text-gold-600 transition group-hover:bg-gold group-hover:text-charcoal-900">
+      <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-gold-50 text-gold-600 transition group-hover:bg-gold group-hover:text-on-gold">
         <Icon />
       </span>
       <h3 className="text-lg font-bold text-charcoal-900">{service.title}</h3>

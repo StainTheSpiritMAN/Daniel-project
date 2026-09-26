@@ -88,6 +88,10 @@ export class SettingsService {
 
     const value = instanceToPlain(instance) as Prisma.InputJsonObject;
     await this.media.assertUsable([...collectMediaIds(value)]);
+    if (key === 'theme' && value.preset === 'custom' && (!value.brand || !value.dark)) {
+      throw new BadRequestException('A custom theme needs both a brand colour and a dark colour.');
+    }
+    if (key === 'branding') await this.prepareBranding(value);
 
     const before = await this.prisma.siteSetting.findUnique({ where: { key } });
     const row = await this.prisma.siteSetting.upsert({
@@ -104,6 +108,23 @@ export class SettingsService {
     );
     this.revalidator.revalidate('settings');
     return { key, value: row.value, media: await this.resolveMedia(row.value) };
+  }
+
+  /** Logos must be images; the icon must be a square image, rendered to favicon sizes. */
+  private async prepareBranding(value: Prisma.InputJsonObject) {
+    for (const field of ['logoId', 'logoDarkId', 'iconId'] as const) {
+      const id = value[field];
+      if (typeof id !== 'string') continue;
+      const media = await this.media.findOne(id);
+      if (media.kind !== 'IMAGE') throw new BadRequestException('Logos and icons must be images (PNG with a transparent background works best).');
+      if (field === 'iconId') {
+        const { width, height } = media;
+        if (!width || !height || Math.abs(width - height) / Math.max(width, height) > 0.05 || width < 180) {
+          throw new BadRequestException('The site icon must be a square image at least 180 × 180 pixels (512 × 512 is ideal).');
+        }
+        await this.media.ensureIconRenditions(id);
+      }
+    }
   }
 
   private async resolveMedia(value: unknown) {

@@ -178,6 +178,8 @@ export const defaultSettings: Settings = {
       'Rivers State',
     ],
   },
+  theme: { preset: 'gold' },
+  branding: {},
 };
 
 const id = (prefix: string, i: number) => `default-${prefix}-${i}`;

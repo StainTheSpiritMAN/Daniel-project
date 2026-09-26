@@ -1,5 +1,10 @@
 import type { Config } from 'tailwindcss';
 
+const shades = (name: string, steps: number[], base: number) => ({
+  DEFAULT: `rgb(var(--${name}-${base}) / <alpha-value>)`,
+  ...Object.fromEntries(steps.map((n) => [n, `rgb(var(--${name}-${n}) / <alpha-value>)`])),
+});
+
 const config: Config = {
   content: [
     './src/app/**/*.{ts,tsx}',
@@ -8,28 +13,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand palette taken from the corporate profile (gold + charcoal)
-        gold: {
-          DEFAULT: '#E0A500',
-          50: '#FDF8E7',
-          100: '#FBEFC2',
-          200: '#F6DE84',
-          300: '#F1CB46',
-          400: '#EBBA1A',
-          500: '#E0A500',
-          600: '#B98700',
-          700: '#8F6800',
-          800: '#664A00',
-          900: '#3D2D00',
-        },
-        charcoal: {
-          DEFAULT: '#2A2A2A',
-          50: '#F5F5F5',
-          100: '#E8E8E8',
-          700: '#383838',
-          800: '#2A2A2A',
-          900: '#1C1C1C',
-        },
+        // Brand palette as CSS variables so admins can switch themes at runtime.
+        // Defaults (gold + charcoal from the corporate profile) live in
+        // globals.css; the active theme is injected by app/layout.tsx.
+        gold: shades('gold', [50, 100, 200, 300, 400, 500, 600, 700, 800, 900], 500),
+        charcoal: shades('charcoal', [50, 100, 700, 800, 900], 800),
+        /** Text colour that stays readable on top of the brand colour. */
+        'on-gold': 'rgb(var(--on-gold) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],

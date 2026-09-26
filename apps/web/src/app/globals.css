@@ -4,6 +4,25 @@
 
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Default theme (gold & charcoal). The admin-selected theme overrides these
+     from app/layout.tsx; values are "r g b" so Tailwind can add opacity. */
+  --gold-50: 253 248 231;
+  --gold-100: 251 239 194;
+  --gold-200: 246 222 132;
+  --gold-300: 241 203 70;
+  --gold-400: 235 186 26;
+  --gold-500: 224 165 0;
+  --gold-600: 185 135 0;
+  --gold-700: 143 104 0;
+  --gold-800: 102 74 0;
+  --gold-900: 61 45 0;
+  --charcoal-50: 245 245 245;
+  --charcoal-100: 232 232 232;
+  --charcoal-700: 56 56 56;
+  --charcoal-800: 42 42 42;
+  --charcoal-900: 28 28 28;
+  --on-gold: 28 28 28;
 }
 
 html {
@@ -16,11 +35,11 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md bg-gold px-6 py-3 font-semibold text-charcoal-900 shadow-sm transition hover:bg-gold-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-md bg-gold px-6 py-3 font-semibold text-on-gold shadow-sm transition hover:bg-gold-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gold-400 focus:ring-offset-2;
   }
 
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-md border-2 border-gold px-6 py-3 font-semibold text-gold-700 transition hover:bg-gold hover:text-charcoal-900;
+    @apply inline-flex items-center justify-center rounded-md border-2 border-gold px-6 py-3 font-semibold text-gold-700 transition hover:bg-gold hover:text-on-gold;
   }
 
   .section {
@@ -53,7 +72,7 @@ body {
   }
 
   .adm-btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-md bg-gold px-3.5 py-2 text-sm font-semibold text-charcoal-900 transition hover:bg-gold-600 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-md bg-gold px-3.5 py-2 text-sm font-semibold text-on-gold transition hover:bg-gold-600 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .adm-btn-danger {

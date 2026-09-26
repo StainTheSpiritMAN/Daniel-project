@@ -3,11 +3,13 @@ import {
   ArrayMaxSize,
   IsArray,
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
   IsUrl,
+  Matches,
   MaxLength,
   ValidateNested,
 } from 'class-validator';
@@ -167,6 +169,28 @@ export class SeoSettings {
   @MediaId() ogImageId?: string;
 }
 
+export const THEME_PRESETS = ['gold', 'green', 'blue', 'copper', 'custom'] as const;
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+export class ThemeSettings {
+  @IsIn(THEME_PRESETS) preset!: (typeof THEME_PRESETS)[number];
+
+  @IsOptional() @Matches(HEX, { message: 'brand must be a colour like #E0A500' })
+  brand?: string;
+
+  @IsOptional() @Matches(HEX, { message: 'dark must be a colour like #1C1C1C' })
+  dark?: string;
+}
+
+export class BrandingSettings {
+  /** Logo for light backgrounds (header). */
+  @MediaId() logoId?: string;
+  /** Logo for dark backgrounds (footer); falls back to `logoId`. */
+  @MediaId() logoDarkId?: string;
+  /** Square site icon; favicon sizes are generated from it. */
+  @MediaId() iconId?: string;
+}
+
 export const SETTINGS: Record<string, { dto: new () => object; adminOnly?: boolean }> = {
   company: { dto: CompanySettings },
   hero: { dto: HeroSettings },
@@ -179,4 +203,6 @@ export const SETTINGS: Record<string, { dto: new () => object; adminOnly?: boole
   contactPage: { dto: ContactPageSettings },
   cta: { dto: CtaSettings },
   seo: { dto: SeoSettings, adminOnly: true },
+  theme: { dto: ThemeSettings, adminOnly: true },
+  branding: { dto: BrandingSettings, adminOnly: true },
 };

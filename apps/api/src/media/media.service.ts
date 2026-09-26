@@ -28,7 +28,11 @@ const SIZES = { lg: 1920, md: 1280, thumb: 480 } as const;
 export type Rendition = { path: string; width: number; height: number; webp?: string };
 export type MediaVariants = Partial<Record<keyof typeof SIZES, Rendition>> & {
   poster?: string;
+  /** Square PNG favicon sizes, created when the image is chosen as site icon. */
+  icon?: Record<string, string>;
 };
+
+const ICON_SIZES = [32, 180, 192, 512];
 
 export type IngestInput = {
   /** Path to the uploaded file on local disk (it is not modified). */
@@ -193,6 +197,24 @@ export class MediaService {
     return { width: original.width, height: original.height, variants };
   }
 
+  /** Generates favicon PNGs for an image (idempotent). */
+  async ensureIconRenditions(id: string) {
+    const media = await this.findOne(id);
+    const variants = media.variants as MediaVariants;
+    if (variants.icon) return media;
+    const base = media.path.replace(/\.[a-z0-9]+$/i, '');
+    const icon: Record<string, string> = {};
+    for (const size of ICON_SIZES) {
+      const path = `${base}-icon-${size}.png`;
+      await sharp(this.toDisk(media.path)).resize(size, size, { fit: 'cover' }).png().toFile(this.toDisk(path));
+      icon[size] = path;
+    }
+    return this.prisma.media.update({
+      where: { id },
+      data: { variants: { ...variants, icon } as Prisma.InputJsonValue },
+    });
+  }
+
   /** Grabs a frame 1s in as a poster, if ffmpeg is installed. */
   private async extractPoster(videoFile: string, posterPublic: string) {
     if (this.ffmpegAvailable === undefined) {
@@ -285,8 +307,9 @@ export class MediaService {
     const files = [
       media.path,
       variants.poster,
+      ...Object.values(variants.icon ?? {}),
       ...Object.values(variants)
-        .filter((v): v is Rendition => typeof v === 'object' && v !== null)
+        .filter((v): v is Rendition => typeof v === 'object' && v !== null && 'path' in v)
         .flatMap((v) => [v.path, v.webp]),
     ].filter((p): p is string => !!p);
     await Promise.all(files.map((p) => fs.rm(this.toDisk(p), { force: true })));

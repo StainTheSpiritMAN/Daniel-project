@@ -112,7 +112,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                         key={item.href}
                         href={item.href}
                         className={`flex items-center justify-between rounded-md px-2 py-1.5 text-sm font-medium transition ${
-                          isActive(item.href) ? 'bg-gold text-charcoal-900' : 'hover:bg-white/10'
+                          isActive(item.href) ? 'bg-gold text-on-gold' : 'hover:bg-white/10'
                         }`}
                       >
                         {item.label}

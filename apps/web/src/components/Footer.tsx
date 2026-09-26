@@ -7,16 +7,19 @@ import type { Service, Settings } from '@/lib/cms';
 export function Footer({
   company,
   services,
+  logo,
 }: {
   company?: Settings['company'];
   services: Service[];
+  /** Uploaded logo for dark backgrounds, if any. */
+  logo?: string;
 }) {
   const year = new Date().getFullYear();
   return (
     <footer className="bg-charcoal-900 text-charcoal-100">
       <div className="container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Logo light tagline={company?.tagline ?? ''} />
+          <Logo light tagline={company?.tagline ?? ''} image={logo} name={company?.name} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-charcoal-100/70">
             {company?.intro}
           </p>

@@ -104,7 +104,7 @@ export default async function AboutPage() {
         <section className="section">
           <div className="container grid gap-10 lg:grid-cols-3">
             <div className="lg:col-span-1">
-              <div className="rounded-2xl bg-gold p-8 text-charcoal-900">
+              <div className="rounded-2xl bg-gold p-8 text-on-gold">
                 <Avatar
                   name={ceo.name}
                   photo={media(ceo.photoId)}
@@ -205,7 +205,7 @@ export default async function AboutPage() {
                     <Avatar
                       name={m.name}
                       photo={m.photo}
-                      className="bg-gold text-charcoal-900"
+                      className="bg-gold text-on-gold"
                     />
                     <h3 className="mt-4 text-lg font-bold text-charcoal-900">
                       {m.name}

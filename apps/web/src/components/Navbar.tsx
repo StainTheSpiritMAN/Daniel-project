@@ -6,14 +6,14 @@ import { useState } from 'react';
 import { Logo } from './Logo';
 import { navLinks } from '@/lib/navigation';
 
-export function Navbar({ tagline }: { tagline: string }) {
+export function Navbar({ tagline, logo, name }: { tagline: string; logo?: string; name?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-charcoal-100 bg-white/90 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <Logo tagline={tagline} />
+        <Logo tagline={tagline} image={logo} name={name} />
 
         <nav className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => {

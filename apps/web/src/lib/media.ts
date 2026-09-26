@@ -13,3 +13,11 @@ export function mediaUrl(path: string | undefined | null) {
   if (!path) return undefined;
   return path.startsWith('/uploads/') ? `${MEDIA_ORIGIN}${path}` : path;
 }
+
+/** URL of a pre-generated WebP rendition of an image (falls back to the original). */
+export function renditionUrl(
+  media: { path: string; variants: { thumb?: { path: string; webp?: string } } } | undefined,
+) {
+  if (!media) return undefined;
+  return mediaUrl(media.variants.thumb?.webp ?? media.variants.thumb?.path ?? media.path);
+}

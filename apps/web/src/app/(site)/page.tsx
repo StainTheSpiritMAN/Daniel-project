@@ -66,7 +66,7 @@ export default async function HomePage() {
             </video>
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900/85 via-charcoal-900/55 to-charcoal-900/15" />
-          <div className="absolute inset-0 opacity-20 [background:radial-gradient(circle_at_top_right,theme(colors.gold.500),transparent_55%)]" />
+          <div className="absolute inset-0 opacity-20 [background:radial-gradient(circle_at_top_right,rgb(var(--gold-500)),transparent_55%)]" />
           <div className="absolute -right-24 top-1/2 hidden h-80 w-80 -translate-y-1/2 rounded-full border-[40px] border-gold/10 lg:block" />
           <div className="container relative grid gap-12 py-20 md:py-28 lg:grid-cols-2 lg:items-center">
             <div>
@@ -173,7 +173,7 @@ export default async function HomePage() {
       {missionVision && (
         <section className="section">
           <div className="container grid gap-6 md:grid-cols-2">
-            <div className="rounded-2xl bg-gold p-8 text-charcoal-900 md:p-10">
+            <div className="rounded-2xl bg-gold p-8 text-on-gold md:p-10">
               <h3 className="text-2xl font-extrabold">Our Mission</h3>
               <p className="mt-4 leading-relaxed">{missionVision.mission}</p>
             </div>

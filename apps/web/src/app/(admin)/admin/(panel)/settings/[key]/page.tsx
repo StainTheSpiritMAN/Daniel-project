@@ -7,6 +7,7 @@ import { api } from '../../../_lib/api';
 import { emptyValue, SETTINGS, toPayload, validate, type Field } from '../../../_lib/schema';
 import { useAdminUser } from '../../../_components/AdminShell';
 import { Fields } from '../../../_components/Fields';
+import { ThemePreview } from '../../../_components/ThemePreview';
 import { ErrorBox, PageTitle, Spinner, useToast, useUnsavedWarning } from '../../../_components/ui';
 
 type Value = Record<string, unknown>;
@@ -26,6 +27,8 @@ function withDefaults(fields: Field[], stored: Value | null): Value {
 /** Pages whose content this setting controls, for the "view on site" link. */
 const PREVIEW: Record<string, string> = {
   hero: '/',
+  theme: '/',
+  branding: '/',
   home: '/',
   missionVision: '/',
   about: '/about',
@@ -111,6 +114,7 @@ export default function SettingEditPage() {
           <div className="adm-card">
             <Fields fields={config.fields} value={value} onChange={setValue} errors={errors} />
           </div>
+          {key === 'theme' && <ThemePreview value={value} onChange={setValue} />}
           {serverError && <ErrorBox message={serverError} />}
           <div className="sticky bottom-0 -mx-4 flex items-center gap-3 border-t border-charcoal-100 bg-white/95 px-4 py-3 backdrop-blur md:mx-0 md:rounded-xl md:border">
             <button type="submit" className="adm-btn-primary" disabled={busy || !dirty}>

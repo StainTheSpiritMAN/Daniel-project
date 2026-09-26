@@ -35,7 +35,7 @@ export default async function ServicesPage() {
                 className="scroll-mt-24 grid gap-8 lg:grid-cols-2 lg:items-center"
               >
                 <div className={reversed ? 'lg:order-2' : ''}>
-                  <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold text-charcoal-900">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold text-on-gold">
                     <Icon className="h-7 w-7" />
                   </span>
                   <h2 className="mt-5 text-2xl font-extrabold text-charcoal-900 md:text-3xl">

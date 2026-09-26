@@ -1,3 +1,5 @@
+import { PRESETS } from '@/lib/theme';
+
 /*
  * Form definitions for every editable piece of the site. Limits mirror the API
  * validators (apps/api/src/content/dto and apps/api/src/settings/dto) so editors
@@ -14,7 +16,9 @@ export type Field =
   | (Base & { type: 'media'; kind: 'IMAGE' | 'VIDEO'; hint?: string })
   | (Base & { type: 'group'; fields: Field[] })
   | (Base & { type: 'repeater'; maxItems: number; itemLabel: string; fields: Field[] })
-  | (Base & { type: 'emails'; maxItems: number });
+  | (Base & { type: 'emails'; maxItems: number })
+  | (Base & { type: 'select'; options: { value: string; label: string }[] })
+  | (Base & { type: 'color' });
 
 const text = (name: string, label: string, max: number, extra: Partial<Base> & { placeholder?: string } = {}): Field => ({
   type: 'text', name, label, max, required: true, ...extra,
@@ -292,6 +296,41 @@ export const SETTINGS: Record<string, SettingConfig> = {
       link('secondaryCta', 'Second button'),
     ],
   },
+  theme: {
+    label: 'Colours & theme',
+    group: 'Appearance',
+    adminOnly: true,
+    description: 'The colour scheme of the whole website. Pick a ready-made theme or set your own brand colour.',
+    fields: [
+      {
+        type: 'select',
+        name: 'preset',
+        label: 'Theme',
+        required: true,
+        options: [
+          ...Object.entries(PRESETS).map(([value, p]) => ({ value, label: p.label })),
+          { value: 'custom', label: 'Custom colours' },
+        ],
+      },
+      { type: 'color', name: 'brand', label: 'Brand colour', help: 'Buttons, highlights and accents. Used when the theme is "Custom colours".' },
+      { type: 'color', name: 'dark', label: 'Dark colour', help: 'Dark sections, footer and headings. Pick a very dark shade.' },
+    ],
+  },
+  branding: {
+    label: 'Logo & site icon',
+    group: 'Appearance',
+    adminOnly: true,
+    description: 'Replace the "S SUBURBAN" lettermark with your logo, and set the icon shown in browser tabs and phone home screens.',
+    fields: [
+      image('logoId', 'Logo (for light backgrounds)', {
+        hint: 'Used in the header. A wide PNG with a transparent background, at least 400 px wide. Leave empty to keep the lettermark.',
+      }),
+      image('logoDarkId', 'Logo for dark backgrounds (optional)', {
+        hint: 'Used in the footer. A white/light version of the logo. Falls back to the main logo.',
+      }),
+      image('iconId', 'Site icon', { hint: 'A square image, ideally 512 × 512 px PNG. Browser-tab and home-screen sizes are made automatically.' }),
+    ],
+  },
   seo: {
     label: 'Search & sharing (SEO)',
     group: 'General',
@@ -319,6 +358,8 @@ export function emptyValue(fields: Field[]): Record<string, unknown> {
           return [f.name, []];
         case 'media':
           return [f.name, null];
+        case 'select':
+          return [f.name, f.options[0]?.value ?? ''];
         default:
           return [f.name, ''];
       }
@@ -359,6 +400,12 @@ export function validate(fields: Field[], value: Record<string, unknown>, prefix
       case 'media':
         if (f.required && !v) errors[path] = 'Choose a file';
         break;
+      case 'select':
+        if (!f.options.some((o) => o.value === v)) errors[path] = 'Choose an option';
+        break;
+      case 'color':
+        if (v && !/^#[0-9a-f]{6}$/i.test(String(v))) errors[path] = 'Use a colour like #E0A500';
+        break;
       case 'group':
         Object.assign(errors, validate(f.fields, (v ?? {}) as Record<string, unknown>, `${path}.`));
         break;
@@ -397,6 +444,12 @@ export function toPayload(fields: Field[], value: Record<string, unknown>, forCo
       case 'media':
         if (v) out[f.name] = v;
         else if (forCollection) out[f.name] = null;
+        break;
+      case 'select':
+        out[f.name] = v;
+        break;
+      case 'color':
+        if (v) out[f.name] = String(v).toUpperCase();
         break;
       case 'group':
         out[f.name] = toPayload(f.fields, (v ?? {}) as Record<string, unknown>);
