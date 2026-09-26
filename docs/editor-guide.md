@@ -30,6 +30,7 @@ again — you can still sign in from another connection (e.g. mobile data).
 | "Our work in pictures" | Content → **Gallery** |
 | Client logos | Content → **Clients** |
 | Management team | Content → **Team** |
+| News & activities (homepage slider + News page) | Content → **News & activities** |
 | Core values / Why choose us points | Content → **Core values** / **Why choose us** |
 | Contact-form messages and newsletter sign-ups | **Inbox** |
 
@@ -42,6 +43,20 @@ again — you can still sign in from another connection (e.g. mobile data).
 - To change the order things appear in, drag rows in a list (or use ▲ ▼).
 - Settings pages have no draft step: **Save & publish** goes live immediately.
 - If you leave a page with unsaved changes, the browser will warn you.
+
+## News & activities
+
+Add company news, project milestones, trainings and community activities under
+**Content → News & activities**:
+
+- **Headline**, **Date** (newest shows first), a landscape **Photo**, a one-line
+  **Highlight** (the caption under the photo in the homepage slider) and the
+  **Full story**.
+- Published items slide across the homepage under "News & Activities"; clicking one
+  opens it on the **News & Activities** page (also in the site menu).
+- Change the slider heading, speed (seconds per slide, 0 = no auto-slide) and the
+  News page banner under **Pages & settings → News & activities page**. Move or hide
+  the slider under **Appearance → Page layout & backgrounds**.
 
 ## Formatting text
 
@@ -70,7 +85,9 @@ Under **Pages & settings → Appearance**:
 - **Page layout & backgrounds** — for the Homepage, About, Services and Projects
   pages: tick/untick to show or hide a section, drag (or ▲ ▼) to reorder, pick a
   background (white, light grey, dark, brand colour), and where offered choose the
-  photo side or number of columns. "Reset this page" restores the original layout.
+  photo side or number of columns. Click **🖼 Photo** to put a photo behind a
+  section and set its **visibility** (low = faint texture, high = clear photo; keep
+  it low behind text). "Reset this page" restores the original layout.
 - **Banner photos** — the About, Services, Projects and Contact page settings each
   have an optional banner photo and a **darkness** slider; the homepage hero has a
   **video darkness** slider. Darker = easier-to-read text.

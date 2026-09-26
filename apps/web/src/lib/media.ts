@@ -21,3 +21,7 @@ export function renditionUrl(
   if (!media) return undefined;
   return mediaUrl(media.variants.thumb?.webp ?? media.variants.thumb?.path ?? media.path);
 }
+
+/** "26 Sep 2026" for a stored ISO date (dates are kept at midnight UTC). */
+export const formatNewsDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });

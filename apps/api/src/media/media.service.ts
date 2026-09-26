@@ -274,11 +274,12 @@ export class MediaService {
 
   /** Lists every place a media item is used, so in-use files cannot be deleted. */
   async usages(id: string) {
-    const [services, gallery, clients, team, settings] = await Promise.all([
+    const [services, gallery, clients, team, news, settings] = await Promise.all([
       this.prisma.service.findMany({ where: { imageId: id }, select: { title: true } }),
       this.prisma.galleryPhoto.findMany({ where: { imageId: id }, select: { caption: true } }),
       this.prisma.client.findMany({ where: { logoId: id }, select: { name: true } }),
       this.prisma.teamMember.findMany({ where: { photoId: id }, select: { name: true } }),
+      this.prisma.newsPost.findMany({ where: { imageId: id }, select: { title: true } }),
       this.prisma.$queryRaw<{ key: string }[]>`
         SELECT key FROM site_settings WHERE value::text LIKE ${`%"${id}"%`}`,
     ]);
@@ -287,6 +288,7 @@ export class MediaService {
       ...gallery.map((g) => `Gallery: ${g.caption}`),
       ...clients.map((c) => `Client: ${c.name}`),
       ...team.map((t) => `Team: ${t.name}`),
+      ...news.map((n) => `News: ${n.title}`),
       ...settings.map((s) => `Site settings: ${s.key}`),
     ];
   }

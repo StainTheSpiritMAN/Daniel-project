@@ -3,6 +3,7 @@ import { ContentStatus } from '@prisma/client';
 import {
   ArrayMaxSize,
   IsArray,
+  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -100,11 +101,35 @@ export class TitleDescriptionDto extends StatusFields {
   description!: string;
 }
 
+export class NewsPostDto extends StatusFields {
+  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+    message: 'Web address may only contain lowercase letters, numbers and dashes.',
+  })
+  @MaxLength(100)
+  slug!: string;
+
+  @IsString() @IsNotEmpty() @MaxLength(140)
+  title!: string;
+
+  @IsDateString({ strict: true }, { message: 'date must be a date like 2026-09-26' })
+  date!: string;
+
+  @IsString() @IsNotEmpty() @MaxLength(200)
+  highlight!: string;
+
+  @IsString() @IsNotEmpty() @MaxLength(8000)
+  body!: string;
+
+  @IsString() @IsNotEmpty()
+  imageId!: string;
+}
+
 export class UpdateServiceDto extends PartialType(ServiceDto) {}
 export class UpdateProjectDto extends PartialType(ProjectDto) {}
 export class UpdateGalleryPhotoDto extends PartialType(GalleryPhotoDto) {}
 export class UpdateClientDto extends PartialType(ClientDto) {}
 export class UpdateTeamMemberDto extends PartialType(TeamMemberDto) {}
+export class UpdateNewsPostDto extends PartialType(NewsPostDto) {}
 export class UpdateTitleDescriptionDto extends PartialType(TitleDescriptionDto) {}
 
 export class ReorderDto {

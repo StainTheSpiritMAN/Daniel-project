@@ -9,6 +9,7 @@ const ALLOWED_TAGS = new Set([
   'team',
   'values',
   'why-us',
+  'news',
   'settings',
 ]);
 

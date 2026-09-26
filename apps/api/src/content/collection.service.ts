@@ -41,14 +41,14 @@ export class CollectionService {
   listPublished(def: CollectionDef) {
     return this.repo(def).findMany({
       where: { status: ContentStatus.PUBLISHED },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      orderBy: def.orderBy ?? [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       include: this.include(def),
     });
   }
 
   listAll(def: CollectionDef) {
     return this.repo(def).findMany({
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      orderBy: def.orderBy ?? [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       include: this.include(def),
     });
   }
@@ -63,7 +63,7 @@ export class CollectionService {
     await this.checkMedia(def, dto);
     const max = await this.repo(def).aggregate({ _max: { sortOrder: true } });
     const row = await this.repo(def).create({
-      data: { ...dto, sortOrder: (max._max.sortOrder ?? -1) + 1 },
+      data: { ...(def.toData?.(dto) ?? dto), sortOrder: (max._max.sortOrder ?? -1) + 1 },
       include: this.include(def),
     });
     await this.audit.log(actorId, 'CREATE', def.entity, row.id, dto);
@@ -77,7 +77,7 @@ export class CollectionService {
       if (dto[field] === '') dto[field] = null;
     }
     await this.checkMedia(def, dto);
-    const row = await this.repo(def).update({ where: { id }, data: dto, include: this.include(def) });
+    const row = await this.repo(def).update({ where: { id }, data: def.toData?.(dto) ?? dto, include: this.include(def) });
 
     const action =
       before.status !== row.status

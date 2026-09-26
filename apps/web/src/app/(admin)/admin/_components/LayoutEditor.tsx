@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { MediaField } from './Fields';
 import {
   BACKGROUNDS,
+  DEFAULT_PHOTO_OPACITY,
   LAYOUT_PAGES,
   resolveLayout,
   type Background,
@@ -45,6 +47,7 @@ export function LayoutEditor({
 }) {
   const [page, setPage] = useState<LayoutPage>('home');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [photoOpen, setPhotoOpen] = useState<Set<string>>(new Set());
   const sections = value[page];
   const defs = LAYOUT_PAGES[page].sections;
 
@@ -159,6 +162,24 @@ export function LayoutEditor({
                 </select>
               )}
 
+              {def.background && (
+                <button
+                  type="button"
+                  className={`adm-btn py-1.5 ${s.backgroundImageId ? 'border-gold' : ''}`}
+                  disabled={!s.visible}
+                  onClick={() =>
+                    setPhotoOpen((open) => {
+                      const next = new Set(open);
+                      if (next.has(s.key)) next.delete(s.key);
+                      else next.add(s.key);
+                      return next;
+                    })
+                  }
+                >
+                  {s.backgroundImageId ? '🖼 Photo ✓' : '🖼 Photo'}
+                </button>
+              )}
+
               {def.columns && (
                 <select
                   className="adm-input w-auto py-1.5"
@@ -173,6 +194,45 @@ export function LayoutEditor({
                     </option>
                   ))}
                 </select>
+              )}
+
+              {def.background && s.visible && (photoOpen.has(s.key) || s.backgroundImageId) && (
+                <div className="flex w-full flex-wrap items-center gap-4 border-t border-charcoal-100 pt-3 pl-12">
+                  <div className="min-w-[18rem] flex-1">
+                    <p className="adm-label">Background photo</p>
+                    <MediaField
+                      id={s.backgroundImageId ?? null}
+                      kind="IMAGE"
+                      invalid={false}
+                      onChange={(id) =>
+                        update(i, {
+                          backgroundImageId: id ?? undefined,
+                          backgroundOpacity: id ? s.backgroundOpacity ?? DEFAULT_PHOTO_OPACITY : undefined,
+                        })
+                      }
+                    />
+                  </div>
+                  {s.backgroundImageId && (
+                    <label className="block">
+                      <span className="adm-label">Photo visibility</span>
+                      <span className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          className="w-44 accent-gold"
+                          min={5}
+                          max={100}
+                          step={5}
+                          value={s.backgroundOpacity ?? DEFAULT_PHOTO_OPACITY}
+                          onChange={(e) => update(i, { backgroundOpacity: Number(e.target.value) })}
+                        />
+                        <span className="w-10 text-sm tabular-nums">{s.backgroundOpacity ?? DEFAULT_PHOTO_OPACITY}%</span>
+                      </span>
+                      <span className="mt-1 block text-xs text-charcoal-700">
+                        Low = faint texture over the background colour; high = clear photo. Keep it low behind text.
+                      </span>
+                    </label>
+                  )}
+                </div>
               )}
             </li>
           );

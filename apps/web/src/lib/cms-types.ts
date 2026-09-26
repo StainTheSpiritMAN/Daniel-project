@@ -30,6 +30,15 @@ export type GalleryPhoto = Status & { caption: string; image: CmsMedia };
 export type Client = Status & { name: string; websiteUrl: string | null; logo: CmsMedia | null };
 export type TeamMember = Status & { name: string; role: string; bio: string[]; photo: CmsMedia | null };
 export type TitleDescription = Status & { title: string; description: string };
+export type NewsPost = Status & {
+  slug: string;
+  title: string;
+  /** ISO date (the time part is always midnight UTC). */
+  date: string;
+  highlight: string;
+  body: string;
+  image: CmsMedia;
+};
 
 type Heading = { eyebrow: string; title: string; subtitle?: string };
 type Link = { label: string; href: string };
@@ -88,6 +97,7 @@ export type Settings = {
   servicesPage: Banner & { metaDescription?: string; header: Heading };
   projectsPage: Banner & { metaDescription?: string; header: Heading; galleryHeading: Heading; clientsHeading: Heading };
   contactPage: Banner & { metaDescription?: string; header: Heading; intro: TitleBody };
+  newsPage: Banner & { metaDescription?: string; header: Heading; sliderHeading: Heading; slideSeconds?: number };
   cta: { title: string; body: string; primaryCta: Link; secondaryCta: Link };
   seo: { defaultTitle: string; defaultDescription: string; keywords: string[]; ogImageId?: string };
   theme: ThemeSetting;

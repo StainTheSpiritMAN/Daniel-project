@@ -6,6 +6,7 @@ import type {
   Client,
   CmsMedia,
   GalleryPhoto,
+  NewsPost,
   Project,
   Service,
   Settings,
@@ -61,6 +62,7 @@ export const getGallery = () => collection<GalleryPhoto>('/gallery', 'gallery', 
 export const getClients = () => collection<Client>('/clients', 'clients', defaultCollections.clients);
 export const getTeam = () => collection<TeamMember>('/team', 'team', defaultCollections.team);
 export const getCoreValues = () => collection<TitleDescription>('/values', 'values', defaultCollections.values);
+export const getNews = () => collection<NewsPost>('/news', 'news', defaultCollections.news);
 export const getWhyUs = () => collection<TitleDescription>('/why-us', 'why-us', defaultCollections.whyUs);
 
 export async function getSettings() {

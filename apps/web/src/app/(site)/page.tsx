@@ -13,10 +13,12 @@ import {
   getServices,
   getSettings,
   getWhyUs,
+  getNews,
   type Settings,
 } from '@/lib/cms';
 import { COLUMNS_CLASS, resolveLayout } from '@/lib/layout';
-import { mediaUrl } from '@/lib/media';
+import { formatNewsDate, mediaUrl } from '@/lib/media';
+import { NewsSlider } from '@/components/NewsSlider';
 
 /** Renders the headline with the `highlight` phrase in gold, if present. */
 function Headline({ hero }: { hero: Settings['hero'] }) {
@@ -32,15 +34,16 @@ function Headline({ hero }: { hero: Settings['hero'] }) {
 }
 
 export default async function HomePage() {
-  const [settings, services, coreValues, whyChooseUs, clients] =
+  const [settings, services, coreValues, whyChooseUs, clients, news] =
     await Promise.all([
       getSettings(),
       getServices(),
       getCoreValues(),
       getWhyUs(),
       getClients(),
+      getNews(),
     ]);
-  const { hero, home, missionVision, cta, media, layout } = settings;
+  const { hero, home, missionVision, cta, media, layout, newsPage } = settings;
   const video = media(hero?.videoId);
   const videoWebm = media(hero?.videoWebmId);
   const poster = media(hero?.posterId)?.path ?? video?.variants.poster;
@@ -267,6 +270,36 @@ export default async function HomePage() {
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+            </Section>
+          ),
+
+        news: (config) =>
+          news.length > 0 && (
+            <Section config={config}>
+              <div className="container">
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                  <SectionHeading
+                    eyebrow={newsPage.sliderHeading.eyebrow}
+                    title={newsPage.sliderHeading.title}
+                    subtitle={newsPage.sliderHeading.subtitle}
+                  />
+                  <Link href="/news" className="font-semibold text-t-link hover:opacity-80">
+                    All news & activities →
+                  </Link>
+                </div>
+                <div className="mt-8">
+                  <NewsSlider
+                    seconds={newsPage.slideSeconds ?? 5}
+                    slides={news.slice(0, 8).map((n) => ({
+                      slug: n.slug,
+                      title: n.title,
+                      dateLabel: formatNewsDate(n.date),
+                      highlight: n.highlight,
+                      image: { path: n.image.path, alt: n.image.alt },
+                    }))}
+                  />
                 </div>
               </div>
             </Section>

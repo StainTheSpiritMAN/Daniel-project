@@ -15,7 +15,13 @@ export type SectionConfig = {
   background?: Background;
   imagePosition?: ImagePosition;
   columns?: Columns;
+  /** Optional photo behind the section (media id) and its visibility, 5–100%. */
+  backgroundImageId?: string;
+  backgroundOpacity?: number;
 };
+
+/** Photo visibility used when a background photo is first chosen. */
+export const DEFAULT_PHOTO_OPACITY = 25;
 
 type SectionDef = {
   label: string;
@@ -55,6 +61,7 @@ export const LAYOUT_PAGES: Record<
         background: 'tint',
         imagePosition: { default: 'left', options: ['left', 'right'] },
       },
+      news: { label: 'News & activities slider', background: 'white' },
       clients: { label: 'Client logos', background: 'white' },
       cta: { label: 'Call-to-action banner', background: 'white' },
     },
@@ -149,11 +156,23 @@ export function resolveLayout(
       ...(def.columns?.options.includes(s.columns!)
         ? { columns: s.columns }
         : {}),
+      ...(def.background && s.backgroundImageId
+        ? {
+            backgroundImageId: s.backgroundImageId,
+            backgroundOpacity: Math.min(Math.max(s.backgroundOpacity ?? DEFAULT_PHOTO_OPACITY, 5), 100),
+          }
+        : {}),
     });
   }
-  for (const [key, def] of Object.entries(defs)) {
-    if (!seen.has(key)) result.push(defaultSection(key, def));
-  }
+  // Sections missing from the stored layout (e.g. added in a later release)
+  // go right after the section that precedes them in the default order.
+  const defaultOrder = Object.keys(defs);
+  defaultOrder.forEach((key, i) => {
+    if (seen.has(key)) return;
+    const prev = defaultOrder.slice(0, i).reverse().find((k) => result.some((r) => r.key === k));
+    const at = prev ? result.findIndex((r) => r.key === prev) + 1 : 0;
+    result.splice(at, 0, defaultSection(key, defs[key]));
+  });
   return result;
 }
 

@@ -1,6 +1,9 @@
+import Image from 'next/image';
 import { Fragment } from 'react';
+import { getSettings } from '@/lib/cms';
 import {
   BACKGROUND_CLASS,
+  DEFAULT_PHOTO_OPACITY,
   type Background,
   type SectionConfig,
 } from '@/lib/layout';
@@ -13,10 +16,11 @@ const TONE: Record<Background, 'light' | 'dark' | 'brand'> = {
 };
 
 /**
- * A page section with the background chosen in the CMS layout. Sets
- * `data-tone` so headings and loose text inside stay readable on it.
+ * A page section with the background chosen in the CMS layout: a colour, and
+ * optionally a photo shown at the chosen visibility on top of that colour.
+ * Sets `data-tone` so headings and loose text inside stay readable on it.
  */
-export function Section({
+export async function Section({
   config,
   className = 'section',
   children,
@@ -28,13 +32,30 @@ export function Section({
   id?: string;
 }) {
   const background = config.background ?? 'white';
+  const { media } = await getSettings();
+  const photo = media(config.backgroundImageId);
+
   return (
     <section
       id={id}
       data-tone={TONE[background]}
-      className={`${className} ${BACKGROUND_CLASS[background]}`}
+      className={`${className} ${BACKGROUND_CLASS[background]} ${photo ? 'relative overflow-hidden' : ''}`}
     >
-      {children}
+      {photo ? (
+        <>
+          <Image
+            src={photo.path}
+            alt=""
+            fill
+            sizes="100vw"
+            className="pointer-events-none object-cover"
+            style={{ opacity: (config.backgroundOpacity ?? DEFAULT_PHOTO_OPACITY) / 100 }}
+          />
+          <div className="relative">{children}</div>
+        </>
+      ) : (
+        children
+      )}
     </section>
   );
 }
@@ -45,10 +66,7 @@ export function Sections({
   render,
 }: {
   layout: SectionConfig[];
-  render: Record<
-    string,
-    ((config: SectionConfig) => React.ReactNode) | undefined
-  >;
+  render: Record<string, ((config: SectionConfig) => React.ReactNode) | undefined>;
 }) {
   return (
     <>

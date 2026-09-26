@@ -21,6 +21,7 @@ export type Field =
   | (Base & { type: 'emails'; maxItems: number })
   | (Base & { type: 'select'; options: { value: string; label: string }[] })
   | (Base & { type: 'color' })
+  | (Base & { type: 'date' })
   | (Base & { type: 'range'; min: number; max: number; step: number; defaultValue: number; unit?: string });
 
 const text = (name: string, label: string, max: number, extra: Partial<Base> & Format & { placeholder?: string } = {}): Field => ({
@@ -81,6 +82,8 @@ export type CollectionConfig = {
   fields: Field[];
   /** Relation holding the thumbnail shown in the list, if any. */
   thumb?: string;
+  /** False for lists with a fixed order (e.g. news, newest first). */
+  sortable?: boolean;
   primary: (row: Record<string, unknown>) => string;
   secondary?: (row: Record<string, unknown>) => string;
 };
@@ -162,6 +165,29 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
     primary: (r) => String(r.title),
     secondary: (r) => String(r.description),
     fields: [text('title', 'Value', 60), area('description', 'Description', 240, { rows: 2, format: 'inline' })],
+  },
+  news: {
+    label: 'News & activities',
+    singular: 'news item',
+    description: 'Shown newest first in the homepage slider and on the News & Activities page.',
+    thumb: 'image',
+    sortable: false,
+    primary: (r) => String(r.title),
+    secondary: (r) => `${String(r.date ?? '').slice(0, 10)} · ${r.highlight}`,
+    fields: [
+      text('title', 'Headline', 140),
+      {
+        type: 'slug', name: 'slug', label: 'Web address', max: 100, from: 'title', required: true,
+        help: 'Used for the link from the homepage slider, e.g. /news#hse-training-umuahia.',
+      },
+      { type: 'date', name: 'date', label: 'Date', required: true, help: 'News is listed newest first by this date.' },
+      image('imageId', 'Photo', { required: true, hint: 'Landscape (4:3) works best — it is the slide image on the homepage.' }),
+      text('highlight', 'Highlight (slide caption)', 200, {
+        format: 'inline',
+        help: 'One or two sentences shown under the photo in the homepage slider.',
+      }),
+      area('body', 'Full story', 8000, { rows: 8, format: 'block' }),
+    ],
   },
   'why-us': {
     label: 'Why choose us',
@@ -308,6 +334,21 @@ export const SETTINGS: Record<string, SettingConfig> = {
     description: 'Banner and introduction on the Contact page. Phone and email are under Company details.',
     fields: [metaDescription, heading('header', 'Page banner'), ...bannerFields(), titleBody('intro', 'Introduction')],
   },
+  newsPage: {
+    label: 'News & activities page',
+    group: 'Pages',
+    description: 'The News & Activities page banner and the heading/speed of the homepage news slider. The news items themselves are under Content → News & activities.',
+    fields: [
+      metaDescription,
+      heading('header', 'Page banner'),
+      ...bannerFields(),
+      heading('sliderHeading', 'Homepage slider heading'),
+      {
+        type: 'range', name: 'slideSeconds', label: 'Seconds per slide', min: 0, max: 15, step: 1, defaultValue: 5, unit: 's',
+        help: 'How long each slide shows before sliding on. 0 = no automatic sliding.',
+      },
+    ],
+  },
   cta: {
     label: 'Call-to-action banner',
     group: 'General',
@@ -393,6 +434,8 @@ export function emptyValue(fields: Field[]): Record<string, unknown> {
           return [f.name, f.options[0]?.value ?? ''];
         case 'range':
           return [f.name, f.defaultValue];
+        case 'date':
+          return [f.name, new Date().toISOString().slice(0, 10)];
         default:
           return [f.name, ''];
       }
@@ -442,6 +485,9 @@ export function validate(fields: Field[], value: Record<string, unknown>, prefix
       case 'range':
         if (typeof v !== 'number' || v < f.min || v > f.max) errors[path] = `Between ${f.min} and ${f.max}`;
         break;
+      case 'date':
+        if (f.required && !/^\d{4}-\d{2}-\d{2}$/.test(String(v ?? ''))) errors[path] = 'Choose a date';
+        break;
       case 'group':
         Object.assign(errors, validate(f.fields, (v ?? {}) as Record<string, unknown>, `${path}.`));
         break;
@@ -489,6 +535,9 @@ export function toPayload(fields: Field[], value: Record<string, unknown>, forCo
         break;
       case 'range':
         out[f.name] = Number(v);
+        break;
+      case 'date':
+        if (v) out[f.name] = String(v).slice(0, 10);
         break;
       case 'group':
         out[f.name] = toPayload(f.fields, (v ?? {}) as Record<string, unknown>);

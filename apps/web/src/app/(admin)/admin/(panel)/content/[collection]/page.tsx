@@ -83,7 +83,7 @@ export default function CollectionListPage() {
     <>
       <PageTitle
         title={config.label}
-        description={`${config.description} Drag rows to change the order on the site.`}
+        description={config.sortable === false ? config.description : `${config.description} Drag rows to change the order on the site.`}
         actions={
           <Link href={`/admin/content/${collection}/new`} className="adm-btn-primary">
             + Add {config.singular}
@@ -107,7 +107,7 @@ export default function CollectionListPage() {
             return (
               <li
                 key={row.id}
-                draggable
+                draggable={config.sortable !== false}
                 onDragStart={() => setDragIndex(i)}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => {
@@ -117,17 +117,21 @@ export default function CollectionListPage() {
                 onDragEnd={() => setDragIndex(null)}
                 className={`flex items-center gap-3 px-3 py-3 ${dragIndex === i ? 'opacity-40' : ''}`}
               >
-                <span className="cursor-grab select-none px-1 text-charcoal-700/50" title="Drag to reorder" aria-hidden>
-                  ⋮⋮
-                </span>
-                <div className="flex flex-col">
-                  <button type="button" className="text-xs leading-none text-charcoal-700 disabled:opacity-20" disabled={i === 0} onClick={() => move(i, i - 1)} aria-label="Move up">
-                    ▲
-                  </button>
-                  <button type="button" className="text-xs leading-none text-charcoal-700 disabled:opacity-20" disabled={i === rows.length - 1} onClick={() => move(i, i + 1)} aria-label="Move down">
-                    ▼
-                  </button>
-                </div>
+                {config.sortable !== false && (
+                  <>
+                    <span className="cursor-grab select-none px-1 text-charcoal-700/50" title="Drag to reorder" aria-hidden>
+                      ⋮⋮
+                    </span>
+                    <div className="flex flex-col">
+                      <button type="button" className="text-xs leading-none text-charcoal-700 disabled:opacity-20" disabled={i === 0} onClick={() => move(i, i - 1)} aria-label="Move up">
+                        ▲
+                      </button>
+                      <button type="button" className="text-xs leading-none text-charcoal-700 disabled:opacity-20" disabled={i === rows.length - 1} onClick={() => move(i, i + 1)} aria-label="Move down">
+                        ▼
+                      </button>
+                    </div>
+                  </>
+                )}
                 {config.thumb && (
                   <div className="h-12 w-16 shrink-0 overflow-hidden rounded bg-charcoal-50">
                     {thumb && <MediaThumb media={thumb} />}

@@ -2,6 +2,8 @@ import type { Type } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import {
   ClientDto,
+  NewsPostDto,
+  UpdateNewsPostDto,
   GalleryPhotoDto,
   ProjectDto,
   ServiceDto,
@@ -32,13 +34,17 @@ export type CollectionDef = {
   /** Name used in the audit log. */
   entity: string;
   /** Prisma client delegate, e.g. `prisma.service`. */
-  delegate: 'service' | 'project' | 'galleryPhoto' | 'client' | 'teamMember' | 'coreValue' | 'whyPoint';
+  delegate: 'service' | 'project' | 'galleryPhoto' | 'client' | 'teamMember' | 'coreValue' | 'whyPoint' | 'newsPost';
   createDto: Type<unknown>;
   updateDto: Type<unknown>;
   /** Foreign keys pointing at Media, paired with their relation name. */
   media: { field: string; relation: string }[];
   /** Human label for audit entries and error messages. */
   label: (row: Record<string, unknown>) => string;
+  /** List order; defaults to the manual (drag-and-drop) order. */
+  orderBy?: Record<string, 'asc' | 'desc'>[];
+  /** Converts incoming values before saving (e.g. date strings). */
+  toData?: (dto: Record<string, unknown>) => Record<string, unknown>;
 };
 
 export const COLLECTIONS: CollectionDef[] = [
@@ -104,5 +110,16 @@ export const COLLECTIONS: CollectionDef[] = [
     updateDto: UpdateTitleDescriptionDto,
     media: [],
     label: (r) => String(r.title),
+  },
+  {
+    key: 'news',
+    entity: 'NewsPost',
+    delegate: 'newsPost',
+    createDto: NewsPostDto,
+    updateDto: UpdateNewsPostDto,
+    media: [{ field: 'imageId', relation: 'image' }],
+    label: (r) => String(r.title),
+    orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+    toData: (dto) => (typeof dto.date === 'string' ? { ...dto, date: new Date(`${dto.date}T00:00:00Z`) } : dto),
   },
 ];

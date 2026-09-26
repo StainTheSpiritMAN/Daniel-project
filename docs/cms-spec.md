@@ -262,6 +262,7 @@ Each phase leaves `main` deployable. Estimated effort: phases 1–2 ≈ 2 days, 
 - **Refresh tokens** have a 30-second reuse grace period so parallel tabs don't trigger theft detection; a replay after that still ends the session.
 - **Uploads** reject HEIC/AVIF photos and QuickTime .mov files with advice to convert them, and failed uploads leave no files behind.
 - **Appearance (added after v1)**: admin-only `theme` (presets or custom brand/dark colours → CSS variables, contrast checks), `branding` (header/footer logo, square site icon → generated favicon PNGs) and `layout` (per-page section order, visibility, background tone, image side, columns) settings; optional banner photo + darkness on inner pages and hero video darkness. Long text fields support light formatting (bold, italic, links, lists) stored as simple markers and rendered as React elements, never raw HTML — this relaxes the §8 "plain text only" rule deliberately.
+- **News & activities (added after v1)**: `NewsPost` collection (slug, date, highlight, body, required photo; newest first, not manually ordered), a homepage auto-sliding card carousel (layout section `news`) linking to `/news#<slug>`, a `/news` page, and a `newsPage` setting (banner, slider heading, seconds per slide). Layout sections can also carry a background photo with a visibility percentage.
 - **Tests**: verified with scripted API smoke tests and a Playwright run of the admin flows; an automated e2e suite in the repo is still to do.
 
 ## 15. Open questions (answer before Phase 6)

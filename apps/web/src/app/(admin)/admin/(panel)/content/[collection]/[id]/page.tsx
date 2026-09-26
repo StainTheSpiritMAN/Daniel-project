@@ -15,7 +15,7 @@ function toFormValue(fields: Field[], row: Row) {
   const base = emptyValue(fields);
   for (const f of fields) {
     const v = row[f.name];
-    if (v !== null && v !== undefined) base[f.name] = v;
+    if (v !== null && v !== undefined) base[f.name] = f.type === 'date' ? String(v).slice(0, 10) : v;
   }
   return base;
 }

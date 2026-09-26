@@ -94,6 +94,7 @@ model Media {
   galleryPhotos GalleryPhoto[]
   clients       Client[]
   teamMembers   TeamMember[]
+  newsPosts     NewsPost[]
 
   @@index([kind])
   @@map("media")
@@ -200,6 +201,27 @@ model WhyPoint {
   updatedAt   DateTime      @updatedAt
 
   @@map("why_points")
+}
+
+/// News & activities: shown in the homepage slider and on /news, newest first.
+model NewsPost {
+  id        String        @id @default(cuid())
+  slug      String        @unique
+  title     String
+  date      DateTime      @db.Date
+  /// One-line highlight shown under the photo in the slider.
+  highlight String
+  /// Full story (light formatting allowed).
+  body      String
+  imageId   String
+  image     Media         @relation(fields: [imageId], references: [id], onDelete: Restrict)
+  status    ContentStatus @default(DRAFT)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([date])
+  @@map("news_posts")
 }
 
 /// Singleton content blocks (company details, hero, page copy, SEO …),

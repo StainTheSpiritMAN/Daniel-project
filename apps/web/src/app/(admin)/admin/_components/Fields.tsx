@@ -215,6 +215,20 @@ function FieldInput({
         </div>
       );
 
+    case 'date':
+      return (
+        <div>
+          <Label field={field} />
+          <input
+            type="date"
+            className={`adm-input w-48 ${invalid}`}
+            value={String(value ?? '').slice(0, 10)}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <Help field={field} error={error} />
+        </div>
+      );
+
     case 'color': {
       const hex = (value as string) ?? '';
       const valid = /^#[0-9a-f]{6}$/i.test(hex);
@@ -381,7 +395,7 @@ const fetchMedia = (id: string) => {
   return mediaCache.get(id)!;
 };
 
-function MediaField({
+export function MediaField({
   id,
   kind,
   onChange,

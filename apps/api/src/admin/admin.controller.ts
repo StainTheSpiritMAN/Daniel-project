@@ -85,7 +85,7 @@ export class AdminDashboardController {
   async summary(@CurrentUser() user: AuthUser) {
     const p = this.prisma;
     const isAdmin = user.role === 'ADMIN';
-    const [services, projects, gallery, clients, team, values, whyUs, media, subscribers, unread, recent] =
+    const [services, projects, gallery, clients, team, values, whyUs, news, media, subscribers, unread, recent] =
       await Promise.all([
         p.service.count(),
         p.project.count(),
@@ -94,6 +94,7 @@ export class AdminDashboardController {
         p.teamMember.count(),
         p.coreValue.count(),
         p.whyPoint.count(),
+        p.newsPost.count(),
         p.media.count(),
         p.newsletterSubscriber.count({ where: { unsubscribedAt: null } }),
         this.contact.countUnread(),
@@ -101,7 +102,7 @@ export class AdminDashboardController {
         isAdmin ? this.audit.list(0, 5) : Promise.resolve(null),
       ]);
     return {
-      counts: { services, projects, gallery, clients, team, values, whyUs, media, subscribers },
+      counts: { services, projects, gallery, clients, team, values, whyUs, news, media, subscribers },
       unreadMessages: unread,
       recentActivity: recent?.items ?? null,
     };

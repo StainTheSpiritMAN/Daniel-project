@@ -11,6 +11,7 @@
  */
 import type {
   Client,
+  NewsPost,
   CmsMedia,
   GalleryPhoto,
   Project,
@@ -158,6 +159,21 @@ export const defaultSettings: Settings = {
       body: "We're here to help with smart automation, power, renewable energy, training, and consulting.",
     },
   },
+  newsPage: {
+    metaDescription:
+      'Company news, project milestones, training sessions and community activities from Suburban Integrated Services Limited.',
+    header: {
+      eyebrow: 'News & Activities',
+      title: 'What we have been up to',
+      subtitle: 'Project milestones, training sessions and community activities from our team.',
+    },
+    sliderHeading: {
+      eyebrow: 'Latest updates',
+      title: 'News & Activities',
+      subtitle: 'Recent projects, trainings and community engagements.',
+    },
+    slideSeconds: 5,
+  },
   cta: {
     title: 'Ready to power your next project?',
     body: "Let's deploy smart, sustainable, and reliable solutions tailored to your needs — from homes and offices to rural communities.",
@@ -214,5 +230,7 @@ export const defaultCollections = {
     photo: null,
   })),
   values: site.coreValues.map<TitleDescription>((v, i) => ({ id: id('value', i), ...v })),
+  /** No news existed before the CMS; posts are added in the admin. */
+  news: [] as NewsPost[],
   whyUs: site.whyChooseUs.map<TitleDescription>((w, i) => ({ id: id('why', i), ...w })),
 };

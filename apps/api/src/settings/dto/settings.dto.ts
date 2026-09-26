@@ -174,6 +174,17 @@ export class ContactPageSettings {
   @Nested(() => TitleBodyDto) intro!: TitleBodyDto;
 }
 
+export class NewsPageSettings {
+  @OptionalText(300) metaDescription?: string;
+  @Nested(() => HeadingDto) header!: HeadingDto;
+  @MediaId() headerImageId?: string;
+  @Overlay() headerOverlay?: number;
+  /** Heading above the homepage news slider. */
+  @Nested(() => HeadingDto) sliderHeading!: HeadingDto;
+  /** Seconds each slide stays before moving on (0 = no auto-slide). */
+  @IsOptional() @IsInt() @Min(0) @Max(30) slideSeconds?: number;
+}
+
 export class CtaSettings {
   @Text(120) title!: string;
   @Text(400) body!: string;
@@ -215,7 +226,7 @@ export class BrandingSettings {
  * apps/web/src/lib/layout.ts (which also holds labels and option lists).
  */
 export const LAYOUT_SECTIONS: Record<string, string[]> = {
-  home: ['hero', 'about', 'services', 'missionVision', 'whyUs', 'clients', 'cta'],
+  home: ['hero', 'about', 'services', 'missionVision', 'whyUs', 'news', 'clients', 'cta'],
   about: ['overview', 'expertise', 'ceo', 'missionVision', 'values', 'management', 'cta'],
   services: ['list', 'cta'],
   projects: ['projects', 'gallery', 'clients', 'cta'],
@@ -227,6 +238,9 @@ export class SectionConfigDto {
   @IsOptional() @IsIn(['white', 'tint', 'dark', 'brand']) background?: string;
   @IsOptional() @IsIn(['left', 'right', 'alternate']) imagePosition?: string;
   @IsOptional() @IsIn([2, 3, 4]) columns?: number;
+  /** Optional photo behind the section, and how visible it is (5–100%). */
+  @IsOptional() @IsString() backgroundImageId?: string;
+  @IsOptional() @IsInt() @Min(5) @Max(100) backgroundOpacity?: number;
 }
 
 const SectionList = () => (target: object, key: string) => {
@@ -254,6 +268,7 @@ export const SETTINGS: Record<string, { dto: new () => object; adminOnly?: boole
   servicesPage: { dto: ServicesPageSettings },
   projectsPage: { dto: ProjectsPageSettings },
   contactPage: { dto: ContactPageSettings },
+  newsPage: { dto: NewsPageSettings },
   cta: { dto: CtaSettings },
   seo: { dto: SeoSettings, adminOnly: true },
   theme: { dto: ThemeSettings, adminOnly: true },
