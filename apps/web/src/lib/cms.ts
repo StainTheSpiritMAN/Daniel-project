@@ -1,5 +1,17 @@
 import 'server-only';
 import { siteConfig } from './config';
+import { bundledMedia, defaultCollections, defaultSettings } from '../data/defaults';
+export type * from './cms-types';
+import type {
+  Client,
+  CmsMedia,
+  GalleryPhoto,
+  Project,
+  Service,
+  Settings,
+  TeamMember,
+  TitleDescription,
+} from './cms-types';
 
 /*
  * Typed fetchers for CMS content. Responses are cached and tagged so the API
@@ -10,89 +22,8 @@ import { siteConfig } from './config';
 const API_URL = process.env.API_INTERNAL_URL || siteConfig.apiUrl;
 const REVALIDATE_SECONDS = 300;
 
-export type CmsMedia = {
-  id: string;
-  path: string;
-  alt: string;
-  width: number | null;
-  height: number | null;
-  mimeType: string;
-  variants: { poster?: string };
-};
-
-type Status = { id: string };
-
-export type Service = Status & {
-  slug: string;
-  title: string;
-  summary: string;
-  items: string[];
-  image: CmsMedia | null;
-};
-export type Project = Status & { title: string; client: string; year: string; description: string | null };
-export type GalleryPhoto = Status & { caption: string; image: CmsMedia };
-export type Client = Status & { name: string; websiteUrl: string | null; logo: CmsMedia | null };
-export type TeamMember = Status & { name: string; role: string; bio: string[]; photo: CmsMedia | null };
-export type TitleDescription = Status & { title: string; description: string };
-
-type Heading = { eyebrow: string; title: string; subtitle?: string };
-type Link = { label: string; href: string };
-type TitleBody = { title: string; body: string };
-
-export type Settings = {
-  company: {
-    name: string;
-    shortName: string;
-    tagline: string;
-    intro: string;
-    website: string;
-    emails: string[];
-    phones: string[];
-    address: string;
-    mapUrl?: string;
-  };
-  hero: {
-    badge: string;
-    headline: string;
-    highlight?: string;
-    subtext: string;
-    primaryCta: Link;
-    secondaryCta: Link;
-    stats: { value: string; label: string }[];
-    videoId?: string;
-    videoWebmId?: string;
-    posterId?: string;
-  };
-  home: {
-    aboutHeading: Heading;
-    aboutParagraphs: string[];
-    servicesHeading: Heading;
-    whyHeading: Heading;
-    whyImageId?: string;
-    whyImageCaption?: string;
-    clientsHeading: Heading;
-  };
-  about: {
-    metaDescription?: string;
-    header: Heading;
-    paragraphs: string[];
-    imageId?: string;
-    consultancy: TitleBody;
-    expertise: TitleBody;
-    ceoHeading: Heading;
-    valuesHeading: Heading;
-    managementHeading: Heading;
-  };
-  missionVision: { mission: string; vision: string };
-  ceo: { name: string; title: string; thankYou: string; statement: string[]; photoId?: string };
-  servicesPage: { metaDescription?: string; header: Heading; headerImageId?: string };
-  projectsPage: { metaDescription?: string; header: Heading; galleryHeading: Heading; clientsHeading: Heading };
-  contactPage: { metaDescription?: string; header: Heading; intro: TitleBody };
-  cta: { title: string; body: string; primaryCta: Link; secondaryCta: Link };
-  seo: { defaultTitle: string; defaultDescription: string; keywords: string[]; ogImageId?: string };
-};
-
-async function cmsFetch<T>(path: string, tag: string, fallback: T): Promise<T> {
+/** Fetches CMS data; returns null (and logs) if the API cannot be reached. */
+async function cmsFetch<T>(path: string, tag: string): Promise<T | null> {
   try {
     const res = await fetch(`${API_URL}${path}`, {
       next: { tags: [tag], revalidate: REVALIDATE_SECONDS },
@@ -100,35 +31,46 @@ async function cmsFetch<T>(path: string, tag: string, fallback: T): Promise<T> {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return (await res.json()) as T;
   } catch (error) {
-    // Builds (e.g. CI) may run without the API: render empty sections and let
-    // the timed revalidation fill them in. At runtime, throw so Next keeps
-    // serving the last good page instead of caching an empty one.
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
-      console.warn(`[cms] ${path} unavailable during build: ${(error as Error).message}`);
-      return fallback;
-    }
-    throw error;
+    console.warn(`[cms] ${API_URL}${path} unavailable, showing default content: ${(error as Error).message}`);
+    return null;
   }
 }
-
-export const getServices = () => cmsFetch<Service[]>('/services', 'services', []);
-export const getProjects = () => cmsFetch<Project[]>('/projects', 'projects', []);
-export const getGallery = () => cmsFetch<GalleryPhoto[]>('/gallery', 'gallery', []);
-export const getClients = () => cmsFetch<Client[]>('/clients', 'clients', []);
-export const getTeam = () => cmsFetch<TeamMember[]>('/team', 'team', []);
-export const getCoreValues = () => cmsFetch<TitleDescription[]>('/values', 'values', []);
-export const getWhyUs = () => cmsFetch<TitleDescription[]>('/why-us', 'why-us', []);
 
 export type SiteSettings = {
   values: Partial<Settings>;
   media: Record<string, CmsMedia>;
 };
 
+const fetchSettings = () => cmsFetch<SiteSettings>('/settings', 'settings');
+
+/**
+ * The original content is shown instead of CMS data when the API is down or
+ * the database has not been seeded (no settings at all), so pages are never
+ * blank. Once the CMS has content, its collections are used as-is — even if
+ * staff empty one on purpose.
+ */
+async function collection<T>(path: string, tag: string, fallback: T[]): Promise<T[]> {
+  const [rows, settings] = await Promise.all([cmsFetch<T[]>(path, tag), fetchSettings()]);
+  const cmsReady = !!settings && Object.keys(settings.values).length > 0;
+  return rows && cmsReady ? rows : fallback;
+}
+
+export const getServices = () => collection<Service>('/services', 'services', defaultCollections.services);
+export const getProjects = () => collection<Project>('/projects', 'projects', defaultCollections.projects);
+export const getGallery = () => collection<GalleryPhoto>('/gallery', 'gallery', defaultCollections.gallery);
+export const getClients = () => collection<Client>('/clients', 'clients', defaultCollections.clients);
+export const getTeam = () => collection<TeamMember>('/team', 'team', defaultCollections.team);
+export const getCoreValues = () => collection<TitleDescription>('/values', 'values', defaultCollections.values);
+export const getWhyUs = () => collection<TitleDescription>('/why-us', 'why-us', defaultCollections.whyUs);
+
 export async function getSettings() {
-  const data = await cmsFetch<SiteSettings>('/settings', 'settings', { values: {}, media: {} });
+  const data = await fetchSettings();
+  // Any setting not saved in the CMS yet falls back to the original content.
+  const values: Settings = { ...defaultSettings, ...data?.values };
   return {
-    ...data.values,
-    /** Resolves a media id stored in a setting. */
-    media: (id?: string) => (id ? data.media[id] : undefined),
+    ...values,
+    /** Resolves a media id stored in a setting (or a bundled default file path). */
+    media: (id?: string): CmsMedia | undefined =>
+      !id ? undefined : id.startsWith('/') ? bundledMedia(id) : data?.media[id],
   };
 }

@@ -17,6 +17,7 @@ import { hashPassword } from '../src/auth/auth.service';
 import { MediaService } from '../src/media/media.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import * as site from '../../web/src/data/company';
+import { DEFAULT_MEDIA_ALT, defaultSettings } from '../../web/src/data/defaults';
 
 const PUBLIC_DIR = join(__dirname, '../../web/public');
 // The Nest logger is silenced below (only errors/warnings), so report via console.
@@ -128,137 +129,21 @@ async function main() {
   );
 
   // ── Site settings (only created if the key does not exist yet) ───────────
-  const heroVideo = await media('/video/lagos-skyline-hero.mp4', 'Aerial view of the Lagos skyline');
-  const heroVideoWebm = await media('/video/lagos-skyline-hero.webm', 'Aerial view of the Lagos skyline');
-  const heroPoster = await media('/video/lagos-skyline-hero-poster.jpg', 'Aerial view of the Lagos skyline');
-  const teamImage = await media('/images/team/installation-team.jpg', 'Suburban installation team in front of a completed inverter bank');
-  const aboutImage = await media('/images/projects/inverter-bank-installation.jpg', 'Inverter and battery bank installation delivered by our engineers');
-  const servicesHeader = await media('/images/projects/rooftop-solar-array.jpg', 'Rooftop solar panel array on a commercial building');
-
-  const settings: Record<string, object> = {
-    company: {
-      name: site.company.name,
-      shortName: site.company.shortName,
-      tagline: site.company.tagline,
-      intro: site.company.intro,
-      website: site.company.website,
-      emails: [...site.company.emails],
-      phones: [...site.company.phones],
-      address: site.company.address,
-    },
-    hero: {
-      badge: 'IT · Power · Energy · Consulting',
-      headline: 'Smart, sustainable technology & energy solutions',
-      highlight: 'technology & energy',
-      subtext:
-        'We deliver tailored, technology-driven, and energy-efficient solutions for homes, offices, institutions, and rural communities across Nigeria and beyond.',
-      primaryCta: { label: 'Request a Quote', href: '/contact' },
-      secondaryCta: { label: 'Our Services', href: '/services' },
-      stats: [
-        { value: '17+', label: 'Years of combined leadership experience' },
-        { value: '4', label: 'Core solution areas' },
-        { value: '16+', label: 'Delivered projects' },
-        { value: '100%', label: 'Indigenous Nigerian company' },
-      ],
-      videoId: heroVideo.id,
-      videoWebmId: heroVideoWebm.id,
-      posterId: heroPoster.id,
-    },
-    home: {
-      aboutHeading: { eyebrow: 'Who We Are', title: 'A fully indigenous, technology-driven company' },
-      aboutParagraphs: [site.about.paragraphs[1], site.about.paragraphs[2]],
-      servicesHeading: {
-        eyebrow: 'What We Do',
-        title: 'Our Services',
-        subtitle: 'From smart automation to renewable energy and professional training, we cover the full lifecycle of modern infrastructure.',
-      },
-      whyHeading: { eyebrow: 'Why Choose Us', title: 'A partner you can rely on' },
-      whyImageId: teamImage.id,
-      whyImageCaption: 'Our installation team on a completed power project',
-      clientsHeading: { eyebrow: 'Our Clients', title: 'Trusted by leading organizations' },
-    },
-    about: {
-      metaDescription:
-        'Learn about Suburban Integrated Services Limited — a fully indigenous, technology-driven company delivering IT, power, and renewable energy solutions.',
-      header: {
-        eyebrow: 'About Company',
-        title: 'About Suburban Integrated Services',
-        subtitle: 'Empowering individuals, businesses, and communities through technology, innovation, and sustainable infrastructure.',
-      },
-      paragraphs: [...site.about.paragraphs],
-      imageId: aboutImage.id,
-      consultancy: { ...site.about.consultancy },
-      expertise: { ...site.about.expertise },
-      ceoHeading: { eyebrow: 'CEO Statement', title: 'A message from our CEO' },
-      valuesHeading: { eyebrow: 'Core Values', title: 'What drives us' },
-      managementHeading: { eyebrow: 'Management', title: 'Meet our leadership' },
-    },
-    missionVision: { mission: site.mission, vision: site.vision },
-    ceo: {
-      name: site.ceo.name,
-      title: site.ceo.title,
-      thankYou: site.ceo.thankYou,
-      statement: [...site.ceo.statement],
-    },
-    servicesPage: {
-      metaDescription:
-        'Smart home & building automation, power solutions & renewable energy, professional training, and IT & general consulting from Suburban Integrated Services.',
-      header: {
-        eyebrow: 'Our Services',
-        title: 'Solutions tailored to your needs',
-        subtitle: 'We deliver world-class services with a deep understanding of local challenges and global standards.',
-      },
-      headerImageId: servicesHeader.id,
-    },
-    projectsPage: {
-      metaDescription:
-        'A selection of projects delivered by Suburban Integrated Services Limited across power, security, ICT, and renewable energy.',
-      header: {
-        eyebrow: 'Our Projects & Clientele',
-        title: 'Delivering results across Nigeria',
-        subtitle: 'A snapshot of recent project highlights spanning power backup, security systems, ICT infrastructure, and renewable energy.',
-      },
-      galleryHeading: {
-        eyebrow: 'From the Field',
-        title: 'Our work in pictures',
-        subtitle: 'Real installations and training engagements delivered by our team.',
-      },
-      clientsHeading: { eyebrow: 'Our Clients', title: 'Trusted by leading organizations' },
-    },
-    contactPage: {
-      metaDescription:
-        'Get in touch with Suburban Integrated Services Limited for smart automation, power, renewable energy, and consulting solutions.',
-      header: {
-        eyebrow: 'Contact Us',
-        title: "Let's talk about your project",
-        subtitle: 'Reach out and our team will get back to you shortly with tailored advice and a no-obligation quote.',
-      },
-      intro: {
-        title: 'Get in touch',
-        body: "We're here to help with smart automation, power, renewable energy, training, and consulting.",
-      },
-    },
-    cta: {
-      title: 'Ready to power your next project?',
-      body: "Let's deploy smart, sustainable, and reliable solutions tailored to your needs — from homes and offices to rural communities.",
-      primaryCta: { label: 'Get a Free Consultation', href: '/contact' },
-      secondaryCta: { label: 'Explore Services', href: '/services' },
-    },
-    seo: {
-      defaultTitle: `${site.company.name} — ${site.company.tagline}`,
-      defaultDescription: site.company.intro,
-      keywords: [
-        'Suburban Integrated Services',
-        'smart home automation Nigeria',
-        'solar power solutions',
-        'renewable energy',
-        'CCTV installation',
-        'IT consulting',
-        'inverter installation',
-        'Rivers State',
-      ],
-    },
-  };
+  // The defaults store bundled file paths in `*Id` fields; import each file
+  // and swap the path for the new media id.
+  async function withMediaIds(value: unknown): Promise<unknown> {
+    if (Array.isArray(value)) return Promise.all(value.map(withMediaIds));
+    if (!value || typeof value !== 'object') return value;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      out[k] =
+        k.endsWith('Id') && typeof v === 'string' && v.startsWith('/')
+          ? (await media(v, DEFAULT_MEDIA_ALT[v] ?? '')).id
+          : await withMediaIds(v);
+    }
+    return out;
+  }
+  const settings = (await withMediaIds(defaultSettings)) as Record<string, object>;
 
   for (const [key, value] of Object.entries(settings)) {
     const created = await prisma.siteSetting.createMany({
