@@ -25,6 +25,34 @@
   --on-gold: 28 28 28;
 }
 
+/* Section tones: loose text inside a section (headings, paragraphs, eyebrows)
+   uses these, so it stays readable when admins pick a dark or brand-colour
+   background. Cards keep their own backgrounds and text colours. */
+:root,
+[data-tone='light'] {
+  --t-strong: var(--charcoal-900);
+  --t-body: var(--charcoal-700);
+  --t-accent: var(--gold-600);
+  --t-link: var(--gold-700);
+}
+[data-tone='dark'] {
+  --t-strong: 255 255 255;
+  --t-body: var(--charcoal-100);
+  --t-accent: var(--gold-400);
+  --t-link: var(--gold-300);
+}
+[data-tone='brand'] {
+  --t-strong: var(--on-gold);
+  --t-body: var(--on-gold);
+  --t-accent: var(--on-gold);
+  --t-link: var(--on-gold);
+}
+/* Translucent cards become solid on dark/brand sections. */
+[data-tone='dark'] .tone-card,
+[data-tone='brand'] .tone-card {
+  background-color: #fff;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -47,11 +75,11 @@ body {
   }
 
   .eyebrow {
-    @apply mb-3 inline-block text-sm font-bold uppercase tracking-widest text-gold-600;
+    @apply mb-3 inline-block text-sm font-bold uppercase tracking-widest text-t-accent;
   }
 
   .heading {
-    @apply text-3xl font-extrabold leading-tight text-charcoal-900 md:text-4xl;
+    @apply text-3xl font-extrabold leading-tight text-t-strong md:text-4xl;
   }
 
   /* ── Admin dashboard ── */

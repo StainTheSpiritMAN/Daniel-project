@@ -3,13 +3,18 @@ import type { CmsMedia } from '@/lib/cms';
 
 type Heading = { eyebrow: string; title: string; subtitle?: string };
 
-/** Dark banner at the top of inner pages; optionally over a faded photo. */
+/**
+ * Dark banner at the top of inner pages; optionally over a photo.
+ * `overlay` (0–90) is how dark the photo is made; 75 matches the original look.
+ */
 export function PageHeader({
   heading,
   image,
+  overlay = 75,
 }: {
   heading?: Heading;
   image?: CmsMedia;
+  overlay?: number;
 }) {
   if (!heading) return null;
   return (
@@ -25,7 +30,8 @@ export function PageHeader({
             alt=""
             fill
             sizes="100vw"
-            className="object-cover opacity-25"
+            className="object-cover"
+            style={{ opacity: (100 - overlay) / 100 }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900 via-charcoal-900/90 to-charcoal-900/60" />
         </>

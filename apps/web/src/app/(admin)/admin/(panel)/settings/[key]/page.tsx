@@ -7,10 +7,18 @@ import { api } from '../../../_lib/api';
 import { emptyValue, SETTINGS, toPayload, validate, type Field } from '../../../_lib/schema';
 import { useAdminUser } from '../../../_components/AdminShell';
 import { Fields } from '../../../_components/Fields';
+import { LayoutEditor } from '../../../_components/LayoutEditor';
 import { ThemePreview } from '../../../_components/ThemePreview';
+import { resolveAllLayouts, type LayoutSetting } from '@/lib/layout';
 import { ErrorBox, PageTitle, Spinner, useToast, useUnsavedWarning } from '../../../_components/ui';
 
 type Value = Record<string, unknown>;
+
+/** Form value for a setting: field defaults, or the full layout for the layout editor. */
+const toFormValue = (key: string, fields: Field[], stored: Value | null): Value =>
+  SETTINGS[key]?.custom === 'layout'
+    ? (resolveAllLayouts(stored as LayoutSetting | null) as unknown as Value)
+    : withDefaults(fields, stored);
 
 /** Fills gaps in a stored value with empty defaults, recursively. */
 function withDefaults(fields: Field[], stored: Value | null): Value {
@@ -36,6 +44,7 @@ const PREVIEW: Record<string, string> = {
   servicesPage: '/services',
   projectsPage: '/projects',
   contactPage: '/contact',
+  layout: '/',
 };
 
 export default function SettingEditPage() {
@@ -53,7 +62,7 @@ export default function SettingEditPage() {
     if (!config) return;
     api<{ value: Value | null }>(`/admin/settings/${key}`)
       .then(({ value: stored }) => {
-        const v = withDefaults(config.fields, stored);
+        const v = toFormValue(key, config.fields, stored);
         setInitial(v);
         setValue(v);
       })
@@ -69,7 +78,7 @@ export default function SettingEditPage() {
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!value) return;
-    const found = validate(config.fields, value);
+    const found = config.custom ? {} : validate(config.fields, value);
     setErrors(found);
     if (Object.keys(found).length) {
       setServerError('Please fix the highlighted fields.');
@@ -80,9 +89,9 @@ export default function SettingEditPage() {
     try {
       const res = await api<{ value: Value }>(`/admin/settings/${key}`, {
         method: 'PUT',
-        body: toPayload(config.fields, value),
+        body: config.custom ? value : toPayload(config.fields, value),
       });
-      const v = withDefaults(config.fields, res.value);
+      const v = toFormValue(key, config.fields, res.value);
       setInitial(v);
       setValue(v);
       notify('Saved — live on the site in a few seconds');
@@ -110,10 +119,17 @@ export default function SettingEditPage() {
       {readOnly && <ErrorBox message="Only administrators can change these settings." />}
       {!value && !serverError && <Spinner />}
       {value && !readOnly && (
-        <form onSubmit={save} className="max-w-3xl space-y-6">
-          <div className="adm-card">
-            <Fields fields={config.fields} value={value} onChange={setValue} errors={errors} />
-          </div>
+        <form onSubmit={save} className={`${config.custom ? 'max-w-5xl' : 'max-w-3xl'} space-y-6`}>
+          {config.custom === 'layout' ? (
+            <LayoutEditor
+              value={value as unknown as Parameters<typeof LayoutEditor>[0]['value']}
+              onChange={(next) => setValue(next as unknown as Value)}
+            />
+          ) : (
+            <div className="adm-card">
+              <Fields fields={config.fields} value={value} onChange={setValue} errors={errors} />
+            </div>
+          )}
           {key === 'theme' && <ThemePreview value={value} onChange={setValue} />}
           {serverError && <ErrorBox message={serverError} />}
           <div className="sticky bottom-0 -mx-4 flex items-center gap-3 border-t border-charcoal-100 bg-white/95 px-4 py-3 backdrop-blur md:mx-0 md:rounded-xl md:border">

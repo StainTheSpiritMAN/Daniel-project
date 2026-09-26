@@ -20,7 +20,8 @@ export type Field =
   | (Base & { type: 'repeater'; maxItems: number; itemLabel: string; fields: Field[] })
   | (Base & { type: 'emails'; maxItems: number })
   | (Base & { type: 'select'; options: { value: string; label: string }[] })
-  | (Base & { type: 'color' });
+  | (Base & { type: 'color' })
+  | (Base & { type: 'range'; min: number; max: number; step: number; defaultValue: number; unit?: string });
 
 const text = (name: string, label: string, max: number, extra: Partial<Base> & Format & { placeholder?: string } = {}): Field => ({
   type: 'text', name, label, max, required: true, ...extra,
@@ -56,6 +57,15 @@ const titleBody = (name: string, label: string): Field => ({
   label,
   fields: [text('title', 'Title', 120), area('body', 'Text', 1500, { rows: 4, format: 'block' })],
 });
+/** Optional banner photo + darkness, shared by the inner-page settings. */
+const bannerFields = (defaultDarkness = 75): Field[] => [
+  image('headerImageId', 'Banner background photo', { hint: 'Optional. A wide landscape photo; it is darkened so the title stays readable.' }),
+  {
+    type: 'range', name: 'headerOverlay', label: 'Banner photo darkness', min: 0, max: 90, step: 5,
+    defaultValue: defaultDarkness, unit: '%', help: 'Higher = darker photo and easier-to-read text.',
+  },
+];
+
 const metaDescription = area('metaDescription', 'Search engine description', 300, {
   required: false,
   rows: 2,
@@ -171,6 +181,8 @@ export type SettingConfig = {
   group: string;
   adminOnly?: boolean;
   fields: Field[];
+  /** Settings with their own editor instead of a field form. */
+  custom?: 'layout';
 };
 
 export const SETTINGS: Record<string, SettingConfig> = {
@@ -214,6 +226,10 @@ export const SETTINGS: Record<string, SettingConfig> = {
       },
       { type: 'media', kind: 'VIDEO', name: 'videoWebmId', label: 'Background video (WebM, optional)', hint: 'Smaller alternative version of the same clip.' },
       image('posterId', 'Video placeholder image', { hint: 'Shown while the video loads. Uses a frame from the video if empty.' }),
+      {
+        type: 'range', name: 'overlay', label: 'Video darkness', min: 0, max: 90, step: 5, defaultValue: 60, unit: '%',
+        help: 'How much the video is darkened behind the headline. Higher = easier to read.',
+      },
     ],
   },
   home: {
@@ -246,6 +262,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     fields: [
       metaDescription,
       heading('header', 'Page banner'),
+      ...bannerFields(),
       { type: 'list', name: 'paragraphs', label: 'Company overview', itemLabel: 'paragraph', max: 1200, maxItems: 8, multiline: true, required: true, format: 'block' },
       image('imageId', 'Overview photo'),
       titleBody('consultancy', 'Consultancy block'),
@@ -271,7 +288,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     label: 'Services page',
     group: 'Pages',
     description: 'Banner at the top of the Services page. The services themselves are under Content → Services.',
-    fields: [metaDescription, heading('header', 'Page banner'), image('headerImageId', 'Banner background photo')],
+    fields: [metaDescription, heading('header', 'Page banner'), ...bannerFields()],
   },
   projectsPage: {
     label: 'Projects page',
@@ -280,6 +297,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     fields: [
       metaDescription,
       heading('header', 'Page banner'),
+      ...bannerFields(),
       heading('galleryHeading', 'Gallery heading'),
       heading('clientsHeading', 'Clients heading'),
     ],
@@ -288,7 +306,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     label: 'Contact page',
     group: 'Pages',
     description: 'Banner and introduction on the Contact page. Phone and email are under Company details.',
-    fields: [metaDescription, heading('header', 'Page banner'), titleBody('intro', 'Introduction')],
+    fields: [metaDescription, heading('header', 'Page banner'), ...bannerFields(), titleBody('intro', 'Introduction')],
   },
   cta: {
     label: 'Call-to-action banner',
@@ -336,6 +354,14 @@ export const SETTINGS: Record<string, SettingConfig> = {
       image('iconId', 'Site icon', { hint: 'A square image, ideally 512 × 512 px PNG. Browser-tab and home-screen sizes are made automatically.' }),
     ],
   },
+  layout: {
+    label: 'Page layout & backgrounds',
+    group: 'Appearance',
+    adminOnly: true,
+    custom: 'layout',
+    description: 'Show, hide and reorder the sections of each page, and choose section backgrounds, image sides and columns.',
+    fields: [],
+  },
   seo: {
     label: 'Search & sharing (SEO)',
     group: 'General',
@@ -365,6 +391,8 @@ export function emptyValue(fields: Field[]): Record<string, unknown> {
           return [f.name, null];
         case 'select':
           return [f.name, f.options[0]?.value ?? ''];
+        case 'range':
+          return [f.name, f.defaultValue];
         default:
           return [f.name, ''];
       }
@@ -411,6 +439,9 @@ export function validate(fields: Field[], value: Record<string, unknown>, prefix
       case 'color':
         if (v && !/^#[0-9a-f]{6}$/i.test(String(v))) errors[path] = 'Use a colour like #E0A500';
         break;
+      case 'range':
+        if (typeof v !== 'number' || v < f.min || v > f.max) errors[path] = `Between ${f.min} and ${f.max}`;
+        break;
       case 'group':
         Object.assign(errors, validate(f.fields, (v ?? {}) as Record<string, unknown>, `${path}.`));
         break;
@@ -455,6 +486,9 @@ export function toPayload(fields: Field[], value: Record<string, unknown>, forCo
         break;
       case 'color':
         if (v) out[f.name] = String(v).toUpperCase();
+        break;
+      case 'range':
+        out[f.name] = Number(v);
         break;
       case 'group':
         out[f.name] = toPayload(f.fields, (v ?? {}) as Record<string, unknown>);

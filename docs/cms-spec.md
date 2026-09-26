@@ -261,6 +261,7 @@ Each phase leaves `main` deployable. Estimated effort: phases 1–2 ≈ 2 days, 
 - **Login limiting** is per (IP address + email) — 10 failures/hour — instead of locking the account, so nobody can lock a real user out, and the reply is identical for unknown emails.
 - **Refresh tokens** have a 30-second reuse grace period so parallel tabs don't trigger theft detection; a replay after that still ends the session.
 - **Uploads** reject HEIC/AVIF photos and QuickTime .mov files with advice to convert them, and failed uploads leave no files behind.
+- **Appearance (added after v1)**: admin-only `theme` (presets or custom brand/dark colours → CSS variables, contrast checks), `branding` (header/footer logo, square site icon → generated favicon PNGs) and `layout` (per-page section order, visibility, background tone, image side, columns) settings; optional banner photo + darkness on inner pages and hero video darkness. Long text fields support light formatting (bold, italic, links, lists) stored as simple markers and rendered as React elements, never raw HTML — this relaxes the §8 "plain text only" rule deliberately.
 - **Tests**: verified with scripted API smoke tests and a Playwright run of the admin flows; an automated e2e suite in the repo is still to do.
 
 ## 15. Open questions (answer before Phase 6)

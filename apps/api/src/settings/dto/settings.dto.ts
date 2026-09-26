@@ -2,15 +2,19 @@ import { Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsEmail,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
   IsUrl,
   Matches,
+  Max,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -39,6 +43,13 @@ const TextList = (maxItems: number, maxLength: number) => (target: object, key: 
 const MediaId = () => (target: object, key: string) => {
   IsOptional()(target, key);
   IsString()(target, key);
+};
+/** Darkness of a photo/video overlay, 0 (none) – 90 (almost black). */
+const Overlay = () => (target: object, key: string) => {
+  IsOptional()(target, key);
+  IsInt()(target, key);
+  Min(0)(target, key);
+  Max(90)(target, key);
 };
 const Nested = <T>(cls: () => new () => T) => (target: object, key: string) => {
   IsObject({ message: `${key} is required` })(target, key);
@@ -99,6 +110,7 @@ export class HeroSettings {
   @MediaId() videoId?: string;
   @MediaId() videoWebmId?: string;
   @MediaId() posterId?: string;
+  @Overlay() overlay?: number;
 }
 
 export class HomeSettings {
@@ -114,6 +126,8 @@ export class HomeSettings {
 export class AboutSettings {
   @OptionalText(300) metaDescription?: string;
   @Nested(() => HeadingDto) header!: HeadingDto;
+  @MediaId() headerImageId?: string;
+  @Overlay() headerOverlay?: number;
   @TextList(8, 1200) paragraphs!: string[];
   @MediaId() imageId?: string;
   @Nested(() => TitleBodyDto) consultancy!: TitleBodyDto;
@@ -140,11 +154,14 @@ export class ServicesPageSettings {
   @OptionalText(300) metaDescription?: string;
   @Nested(() => HeadingDto) header!: HeadingDto;
   @MediaId() headerImageId?: string;
+  @Overlay() headerOverlay?: number;
 }
 
 export class ProjectsPageSettings {
   @OptionalText(300) metaDescription?: string;
   @Nested(() => HeadingDto) header!: HeadingDto;
+  @MediaId() headerImageId?: string;
+  @Overlay() headerOverlay?: number;
   @Nested(() => HeadingDto) galleryHeading!: HeadingDto;
   @Nested(() => HeadingDto) clientsHeading!: HeadingDto;
 }
@@ -152,6 +169,8 @@ export class ProjectsPageSettings {
 export class ContactPageSettings {
   @OptionalText(300) metaDescription?: string;
   @Nested(() => HeadingDto) header!: HeadingDto;
+  @MediaId() headerImageId?: string;
+  @Overlay() headerOverlay?: number;
   @Nested(() => TitleBodyDto) intro!: TitleBodyDto;
 }
 
@@ -191,6 +210,40 @@ export class BrandingSettings {
   @MediaId() iconId?: string;
 }
 
+/**
+ * Sections each page may contain, in their default order. Mirrors
+ * apps/web/src/lib/layout.ts (which also holds labels and option lists).
+ */
+export const LAYOUT_SECTIONS: Record<string, string[]> = {
+  home: ['hero', 'about', 'services', 'missionVision', 'whyUs', 'clients', 'cta'],
+  about: ['overview', 'expertise', 'ceo', 'missionVision', 'values', 'management', 'cta'],
+  services: ['list', 'cta'],
+  projects: ['projects', 'gallery', 'clients', 'cta'],
+};
+
+export class SectionConfigDto {
+  @Matches(/^[a-zA-Z]{1,30}$/) key!: string;
+  @IsBoolean() visible!: boolean;
+  @IsOptional() @IsIn(['white', 'tint', 'dark', 'brand']) background?: string;
+  @IsOptional() @IsIn(['left', 'right', 'alternate']) imagePosition?: string;
+  @IsOptional() @IsIn([2, 3, 4]) columns?: number;
+}
+
+const SectionList = () => (target: object, key: string) => {
+  IsOptional()(target, key);
+  IsArray()(target, key);
+  ArrayMaxSize(20)(target, key);
+  ValidateNested({ each: true })(target, key);
+  Type(() => SectionConfigDto)(target, key);
+};
+
+export class LayoutSettings {
+  @SectionList() home?: SectionConfigDto[];
+  @SectionList() about?: SectionConfigDto[];
+  @SectionList() services?: SectionConfigDto[];
+  @SectionList() projects?: SectionConfigDto[];
+}
+
 export const SETTINGS: Record<string, { dto: new () => object; adminOnly?: boolean }> = {
   company: { dto: CompanySettings },
   hero: { dto: HeroSettings },
@@ -205,4 +258,5 @@ export const SETTINGS: Record<string, { dto: new () => object; adminOnly?: boole
   seo: { dto: SeoSettings, adminOnly: true },
   theme: { dto: ThemeSettings, adminOnly: true },
   branding: { dto: BrandingSettings, adminOnly: true },
+  layout: { dto: LayoutSettings, adminOnly: true },
 };

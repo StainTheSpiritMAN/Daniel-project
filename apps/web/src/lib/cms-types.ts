@@ -1,4 +1,5 @@
 /** Shapes of CMS content as returned by the public API (no framework imports). */
+import type { LayoutSetting } from './layout';
 import type { ThemeSetting } from './theme';
 
 export type CmsMedia = {
@@ -33,6 +34,8 @@ export type TitleDescription = Status & { title: string; description: string };
 type Heading = { eyebrow: string; title: string; subtitle?: string };
 type Link = { label: string; href: string };
 type TitleBody = { title: string; body: string };
+/** Optional photo behind a page banner, and how dark to make it (0–90). */
+type Banner = { headerImageId?: string; headerOverlay?: number };
 
 export type Settings = {
   company: {
@@ -57,6 +60,8 @@ export type Settings = {
     videoId?: string;
     videoWebmId?: string;
     posterId?: string;
+    /** Darkness of the overlay on the video, 0–90 (default 60). */
+    overlay?: number;
   };
   home: {
     aboutHeading: Heading;
@@ -67,7 +72,7 @@ export type Settings = {
     whyImageCaption?: string;
     clientsHeading: Heading;
   };
-  about: {
+  about: Banner & {
     metaDescription?: string;
     header: Heading;
     paragraphs: string[];
@@ -80,11 +85,12 @@ export type Settings = {
   };
   missionVision: { mission: string; vision: string };
   ceo: { name: string; title: string; thankYou: string; statement: string[]; photoId?: string };
-  servicesPage: { metaDescription?: string; header: Heading; headerImageId?: string };
-  projectsPage: { metaDescription?: string; header: Heading; galleryHeading: Heading; clientsHeading: Heading };
-  contactPage: { metaDescription?: string; header: Heading; intro: TitleBody };
+  servicesPage: Banner & { metaDescription?: string; header: Heading };
+  projectsPage: Banner & { metaDescription?: string; header: Heading; galleryHeading: Heading; clientsHeading: Heading };
+  contactPage: Banner & { metaDescription?: string; header: Heading; intro: TitleBody };
   cta: { title: string; body: string; primaryCta: Link; secondaryCta: Link };
   seo: { defaultTitle: string; defaultDescription: string; keywords: string[]; ogImageId?: string };
   theme: ThemeSetting;
   branding: { logoId?: string; logoDarkId?: string; iconId?: string };
+  layout: LayoutSetting;
 };

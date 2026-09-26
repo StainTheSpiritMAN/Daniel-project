@@ -3,6 +3,8 @@ import { InlineText, RichText } from '@/components/RichText';
 import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
 import { PageHeader } from '@/components/PageHeader';
+import { Section, Sections } from '@/components/Section';
+import { resolveLayout } from '@/lib/layout';
 import { CheckIcon, serviceIcon } from '@/components/Icons';
 import { getServices, getSettings } from '@/lib/cms';
 
@@ -12,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ServicesPage() {
-  const [{ servicesPage, cta, media }, services] = await Promise.all([
+  const [{ servicesPage, cta, media, layout }, services] = await Promise.all([
     getSettings(),
     getServices(),
   ]);
@@ -22,13 +24,21 @@ export default async function ServicesPage() {
       <PageHeader
         heading={servicesPage?.header}
         image={media(servicesPage?.headerImageId)}
+        overlay={servicesPage?.headerOverlay}
       />
 
-      <section className="section">
+      <Sections
+        layout={resolveLayout(layout, 'services')}
+        render={{
+          list: (config) => (
+      <Section config={config}>
         <div className="container space-y-20">
           {services.map((service, idx) => {
             const Icon = serviceIcon(service.slug);
-            const reversed = idx % 2 === 1;
+            // "reversed" puts the photo on the left.
+            const reversed =
+              config.imagePosition === 'left' ||
+              (config.imagePosition !== 'right' && idx % 2 === 1);
             return (
               <div
                 key={service.id}
@@ -39,13 +49,13 @@ export default async function ServicesPage() {
                   <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold text-on-gold">
                     <Icon className="h-7 w-7" />
                   </span>
-                  <h2 className="mt-5 text-2xl font-extrabold text-charcoal-900 md:text-3xl">
+                  <h2 className="mt-5 text-2xl font-extrabold text-t-strong md:text-3xl">
                     {service.title}
                   </h2>
-                  <RichText text={service.summary} className="mt-3 leading-relaxed text-charcoal-700" />
+                  <RichText text={service.summary} className="mt-3 leading-relaxed text-t-body" />
                 </div>
                 <div
-                  className={`overflow-hidden rounded-2xl border border-charcoal-100 bg-charcoal-50/50 ${
+                  className={`tone-card overflow-hidden rounded-2xl border border-charcoal-100 bg-charcoal-50/50 ${
                     reversed ? 'lg:order-1' : ''
                   }`}
                 >
@@ -75,9 +85,11 @@ export default async function ServicesPage() {
             );
           })}
         </div>
-      </section>
-
-      <CTASection cta={cta} />
+      </Section>
+          ),
+          cta: (config) => <CTASection cta={cta} config={config} />,
+        }}
+      />
     </>
   );
 }

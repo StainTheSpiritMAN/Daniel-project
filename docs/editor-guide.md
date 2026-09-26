@@ -43,6 +43,38 @@ again — you can still sign in from another connection (e.g. mobile data).
 - Settings pages have no draft step: **Save & publish** goes live immediately.
 - If you leave a page with unsaved changes, the browser will warn you.
 
+## Formatting text
+
+Long text boxes (paragraphs, biographies, summaries…) have a small toolbar:
+
+- **B** bold, *I* italic — select words first, or press Ctrl/⌘+B / Ctrl/⌘+I.
+- **Link** — select the words, click Link, and paste the address
+  (`https://…`, a page like `/contact`, or `mailto:name@example.com`).
+- **• List / 1. List** — turns the selected lines into a bulleted or numbered list.
+- **Preview** shows how it will look. You may see symbols such as `**` in the
+  box itself — that is how the formatting is stored; the website shows it properly.
+
+Headings, fonts and sizes are set by the design and can't be changed here.
+
+## Appearance (administrators)
+
+Under **Pages & settings → Appearance**:
+
+- **Colours & theme** — choose a ready-made theme or "Custom colours". The preview
+  shows buttons and text in the new colours; a ⚠ warning means some text may be
+  hard to read, so try a deeper or brighter shade.
+- **Logo & site icon** — upload your logo (a wide PNG with a transparent
+  background), an optional white version for the dark footer, and a square icon
+  (512 × 512 px) for browser tabs and phone home screens. Leave empty to keep the
+  original "S SUBURBAN" lettermark.
+- **Page layout & backgrounds** — for the Homepage, About, Services and Projects
+  pages: tick/untick to show or hide a section, drag (or ▲ ▼) to reorder, pick a
+  background (white, light grey, dark, brand colour), and where offered choose the
+  photo side or number of columns. "Reset this page" restores the original layout.
+- **Banner photos** — the About, Services, Projects and Contact page settings each
+  have an optional banner photo and a **darkness** slider; the homepage hero has a
+  **video darkness** slider. Darker = easier-to-read text.
+
 ## Photos
 
 - Upload in **Media library**, or straight from any photo field (**Choose image… → Upload**).

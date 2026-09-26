@@ -242,6 +242,36 @@ function FieldInput({
       );
     }
 
+    case 'range': {
+      const n = typeof value === 'number' ? value : field.defaultValue;
+      return (
+        <div>
+          <Label field={field} />
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              className="w-64 accent-gold"
+              min={field.min}
+              max={field.max}
+              step={field.step}
+              value={n}
+              onChange={(e) => onChange(Number(e.target.value))}
+            />
+            <span className="w-12 text-sm tabular-nums text-charcoal-800">
+              {n}
+              {field.unit}
+            </span>
+            {n !== field.defaultValue && (
+              <button type="button" className="text-xs font-semibold text-gold-700" onClick={() => onChange(field.defaultValue)}>
+                Reset
+              </button>
+            )}
+          </div>
+          <Help field={field} error={error} />
+        </div>
+      );
+    }
+
     case 'media':
       return (
         <div>

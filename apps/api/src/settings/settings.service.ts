@@ -12,7 +12,7 @@ import { AuditService, diffFields } from '../audit/audit.service';
 import { RevalidateService } from '../common/revalidate.service';
 import { MediaService } from '../media/media.service';
 import { publicMediaSelect } from '../content/collections';
-import { SETTINGS } from './dto/settings.dto';
+import { LAYOUT_SECTIONS, SETTINGS } from './dto/settings.dto';
 
 /** Every string stored under a key ending in `Id` is a Media id. */
 function collectMediaIds(value: unknown, out = new Set<string>()): Set<string> {
@@ -92,6 +92,7 @@ export class SettingsService {
       throw new BadRequestException('A custom theme needs both a brand colour and a dark colour.');
     }
     if (key === 'branding') await this.prepareBranding(value);
+    if (key === 'layout') this.checkLayout(value);
 
     const before = await this.prisma.siteSetting.findUnique({ where: { key } });
     const row = await this.prisma.siteSetting.upsert({
@@ -108,6 +109,17 @@ export class SettingsService {
     );
     this.revalidator.revalidate('settings');
     return { key, value: row.value, media: await this.resolveMedia(row.value) };
+  }
+
+  /** Each page may only list its own sections, once each. */
+  private checkLayout(value: Prisma.InputJsonObject) {
+    for (const [page, sections] of Object.entries(value)) {
+      const allowed = LAYOUT_SECTIONS[page];
+      const keys = (sections as { key: string }[]).map((s) => s.key);
+      if (!allowed || keys.some((k) => !allowed.includes(k)) || new Set(keys).size !== keys.length) {
+        throw new BadRequestException(`Invalid sections for the ${page} page.`);
+      }
+    }
   }
 
   /** Logos must be images; the icon must be a square image, rendered to favicon sizes. */

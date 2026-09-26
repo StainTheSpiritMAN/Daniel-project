@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
 import { ClientLogos } from '@/components/ClientLogos';
 import { PageHeader } from '@/components/PageHeader';
+import { Section, Sections } from '@/components/Section';
+import { COLUMNS_CLASS, resolveLayout } from '@/lib/layout';
 import { SectionHeading } from '@/components/SectionHeading';
 import { getClients, getGallery, getProjects, getSettings } from '@/lib/cms';
 
@@ -13,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ProjectsPage() {
-  const [{ projectsPage, cta }, projects, gallery, clients] = await Promise.all([
+  const [{ projectsPage, cta, media, layout }, projects, gallery, clients] = await Promise.all([
     getSettings(),
     getProjects(),
     getGallery(),
@@ -22,12 +24,19 @@ export default async function ProjectsPage() {
 
   return (
     <>
-      <PageHeader heading={projectsPage?.header} />
+      <PageHeader
+        heading={projectsPage?.header}
+        image={media(projectsPage?.headerImageId)}
+        overlay={projectsPage?.headerOverlay}
+      />
 
-      {projects.length > 0 && (
-        <section className="section">
+      <Sections
+        layout={resolveLayout(layout, 'projects')}
+        render={{
+          projects: (config) => projects.length > 0 && (
+        <Section config={config}>
           <div className="container">
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div className={`grid gap-5 md:grid-cols-2 ${COLUMNS_CLASS[config.columns ?? 3]}`}>
               {projects.map((project) => (
                 <div
                   key={project.id}
@@ -51,12 +60,11 @@ export default async function ProjectsPage() {
               ))}
             </div>
           </div>
-        </section>
-      )}
+        </Section>
+          ),
 
-      {/* Gallery */}
-      {gallery.length > 0 && (
-        <section className="section bg-charcoal-50/60">
+          gallery: (config) => gallery.length > 0 && (
+        <Section config={config}>
           <div className="container">
             <SectionHeading
               center
@@ -64,7 +72,7 @@ export default async function ProjectsPage() {
               title={projectsPage?.galleryHeading.title ?? ''}
               subtitle={projectsPage?.galleryHeading.subtitle}
             />
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className={`mt-12 grid gap-5 sm:grid-cols-2 ${COLUMNS_CLASS[config.columns ?? 3]}`}>
               {gallery.map((photo) => (
                 <figure
                   key={photo.id}
@@ -86,21 +94,22 @@ export default async function ProjectsPage() {
               ))}
             </div>
           </div>
-        </section>
-      )}
+        </Section>
+          ),
 
-      {/* Clients */}
-      {clients.length > 0 && (
-        <section className="section">
+          clients: (config) => clients.length > 0 && (
+        <Section config={config}>
           <div className="container text-center">
             <span className="eyebrow">{projectsPage?.clientsHeading.eyebrow}</span>
             <h2 className="heading">{projectsPage?.clientsHeading.title}</h2>
             <ClientLogos clients={clients} />
           </div>
-        </section>
-      )}
+        </Section>
+          ),
 
-      <CTASection cta={cta} />
+          cta: (config) => <CTASection cta={cta} config={config} />,
+        }}
+      />
     </>
   );
 }

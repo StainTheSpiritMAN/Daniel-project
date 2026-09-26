@@ -180,6 +180,7 @@ export const defaultSettings: Settings = {
   },
   theme: { preset: 'gold' },
   branding: {},
+  layout: {},
 };
 
 const id = (prefix: string, i: number) => `default-${prefix}-${i}`;

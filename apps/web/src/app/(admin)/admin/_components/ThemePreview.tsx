@@ -31,7 +31,7 @@ export function ThemePreview({
   return (
     <div className="adm-card space-y-4">
       <h2 className="font-bold text-charcoal-900">Preview</h2>
-      <div style={themeVariables(theme) as React.CSSProperties} className="overflow-hidden rounded-lg border border-charcoal-100">
+      <div style={themeVariables(theme) as React.CSSProperties} data-tone="light" className="overflow-hidden rounded-lg border border-charcoal-100">
         <div className="bg-charcoal-900 p-6 text-white">
           <span className="eyebrow text-gold-200">Our services</span>
           <p className="text-2xl font-extrabold">

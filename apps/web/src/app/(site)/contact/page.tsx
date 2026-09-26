@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ContactPage() {
-  const [{ company, contactPage }, services] = await Promise.all([
+  const [{ company, contactPage, media }, services] = await Promise.all([
     getSettings(),
     getServices(),
   ]);
@@ -33,7 +33,11 @@ export default async function ContactPage() {
 
   return (
     <>
-      <PageHeader heading={contactPage?.header} />
+      <PageHeader
+        heading={contactPage?.header}
+        image={media(contactPage?.headerImageId)}
+        overlay={contactPage?.headerOverlay}
+      />
 
       <section className="section">
         <div className="container grid gap-12 lg:grid-cols-5">

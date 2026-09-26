@@ -1,20 +1,31 @@
 import Link from 'next/link';
 import type { Settings } from '@/lib/cms';
+import type { SectionConfig } from '@/lib/layout';
+import { Section } from './Section';
 import { RichText } from './RichText';
 
-export function CTASection({ cta }: { cta?: Settings['cta'] }) {
+export function CTASection({
+  cta,
+  config,
+}: {
+  cta?: Settings['cta'];
+  config: SectionConfig;
+}) {
   if (!cta) return null;
   return (
-    <section className="section">
+    <Section config={config}>
       <div className="container">
-        <div className="relative overflow-hidden rounded-2xl bg-charcoal-900 px-8 py-14 text-center md:px-16">
+        <div className="relative overflow-hidden rounded-2xl bg-charcoal-900 px-8 py-14 text-center ring-1 ring-white/10 md:px-16">
           <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gold/10" />
           <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-gold/5" />
           <div className="relative">
             <h2 className="text-3xl font-extrabold text-white md:text-4xl">
               {cta.title}
             </h2>
-            <RichText text={cta.body} className="mx-auto mt-4 max-w-xl text-charcoal-100/70" />
+            <RichText
+              text={cta.body}
+              className="mx-auto mt-4 max-w-xl text-charcoal-100/70"
+            />
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href={cta.primaryCta.href} className="btn-primary">
                 {cta.primaryCta.label}
@@ -29,6 +40,6 @@ export function CTASection({ cta }: { cta?: Settings['cta'] }) {
           </div>
         </div>
       </div>
-    </section>
+    </Section>
   );
 }
