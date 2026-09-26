@@ -10,13 +10,16 @@ import { ErrorBox, formatDate, PageTitle, Spinner } from '../_components/ui';
 type Summary = {
   counts: Record<string, number>;
   unreadMessages: number;
-  recentActivity: {
-    id: string;
-    action: string;
-    entity: string;
-    createdAt: string;
-    actor: { name: string } | null;
-  }[];
+  /** Null for editors — the activity log is admin-only. */
+  recentActivity:
+    | {
+        id: string;
+        action: string;
+        entity: string;
+        createdAt: string;
+        actor: { name: string } | null;
+      }[]
+    | null;
 };
 
 const countKey: Record<string, string> = { 'why-us': 'whyUs' };
@@ -45,7 +48,7 @@ export default function DashboardPage() {
       {!data && !error && <Spinner />}
       {data && (
         <div className="grid gap-6 xl:grid-cols-3">
-          <div className="space-y-6 xl:col-span-2">
+          <div className={`space-y-6 ${data.recentActivity ? 'xl:col-span-2' : 'xl:col-span-3'}`}>
             {data.unreadMessages > 0 && (
               <Link
                 href="/admin/inbox"
@@ -80,24 +83,26 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          <div className="adm-card">
-            <h2 className="font-bold text-charcoal-900">Recent activity</h2>
-            {data.recentActivity.length === 0 ? (
-              <p className="mt-3 text-sm text-charcoal-700">Nothing yet.</p>
-            ) : (
-              <ul className="mt-3 space-y-3 text-sm">
-                {data.recentActivity.map((a) => (
-                  <li key={a.id}>
-                    <p className="text-charcoal-900">
-                      <span className="font-semibold">{a.actor?.name ?? 'System'}</span>{' '}
-                      {a.action.toLowerCase().replace('_', ' ')} · {a.entity}
-                    </p>
-                    <p className="text-xs text-charcoal-700">{formatDate(a.createdAt)}</p>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          {data.recentActivity && (
+            <div className="adm-card">
+              <h2 className="font-bold text-charcoal-900">Recent activity</h2>
+              {data.recentActivity.length === 0 ? (
+                <p className="mt-3 text-sm text-charcoal-700">Nothing yet.</p>
+              ) : (
+                <ul className="mt-3 space-y-3 text-sm">
+                  {data.recentActivity.map((a) => (
+                    <li key={a.id}>
+                      <p className="text-charcoal-900">
+                        <span className="font-semibold">{a.actor?.name ?? 'System'}</span>{' '}
+                        {a.action.toLowerCase().replace('_', ' ')} · {a.entity}
+                      </p>
+                      <p className="text-xs text-charcoal-700">{formatDate(a.createdAt)}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       )}
     </>

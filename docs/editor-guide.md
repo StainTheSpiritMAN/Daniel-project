@@ -10,8 +10,9 @@ photos, projects, the team, or contact details.
 2. Change your password straight away: **My account → Change password**.
 3. Forgot your password? Ask an administrator to reset it under **Users**.
 
-After 5 quick login attempts you must wait a minute; after 10 wrong passwords
-the account is locked for an hour.
+After 5 quick login attempts you must wait a minute. After 10 wrong passwords
+from the same network, that network must wait an hour before trying that email
+again — you can still sign in from another connection (e.g. mobile data).
 
 ## Where things are
 

@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,7 +13,8 @@ import type { User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import type { AppConfig } from '../config/configuration';
-import { LOCKOUT_MINUTES, MAX_FAILED_LOGINS } from './auth.constants';
+import { REFRESH_REUSE_GRACE_MS } from './auth.constants';
+import { LoginAttempts } from './login-attempts';
 
 const INVALID_LOGIN = 'Incorrect email or password.';
 
@@ -27,46 +30,40 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService<AppConfig, true>,
     private readonly audit: AuditService,
+    private readonly attempts: LoginAttempts,
   ) {}
 
   private get authConfig() {
     return this.config.get('auth', { infer: true });
   }
 
-  async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-    });
-
-    if (!user || !user.isActive) {
-      // Still spend hashing time so response timing does not reveal accounts.
-      await argon2.hash(password).catch(() => undefined);
-      throw new UnauthorizedException(INVALID_LOGIN);
-    }
-    if (user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new UnauthorizedException(
-        'Too many failed attempts. Try again later.',
+  async login(email: string, password: string, ip: string) {
+    // Checked before looking the account up, so the answer is the same
+    // whether or not the email exists.
+    if (this.attempts.isBlocked(ip, email)) {
+      throw new HttpException(
+        'Too many failed attempts from this network. Try again later.',
+        HttpStatus.TOO_MANY_REQUESTS,
       );
     }
 
-    if (!(await argon2.verify(user.passwordHash, password))) {
-      const failed = user.failedLoginCount + 1;
-      const lock = failed >= MAX_FAILED_LOGINS;
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          failedLoginCount: lock ? 0 : failed,
-          lockedUntil: lock
-            ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000)
-            : user.lockedUntil,
-        },
-      });
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase().trim() },
+    });
+    const valid = user?.isActive
+      ? await argon2.verify(user.passwordHash, password)
+      : // Still spend hashing time so response timing does not reveal accounts.
+        await argon2.hash(password).then(() => false, () => false);
+
+    if (!user || !valid) {
+      this.attempts.recordFailure(ip, email);
       throw new UnauthorizedException(INVALID_LOGIN);
     }
 
+    this.attempts.clear(ip, email);
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() },
+      data: { lastLoginAt: new Date() },
     });
     await this.audit.log(user.id, 'LOGIN', 'User', user.id);
 
@@ -83,22 +80,25 @@ export class AuthService {
     });
     if (!stored) throw new UnauthorizedException('Session expired.');
 
-    if (stored.usedAt || stored.revokedAt) {
-      await this.revokeFamily(stored.family);
-      throw new UnauthorizedException('Session expired.');
-    }
-    if (stored.expiresAt < new Date() || !stored.user.isActive) {
+    if (stored.revokedAt || stored.expiresAt < new Date() || !stored.user.isActive) {
       throw new UnauthorizedException('Session expired.');
     }
 
-    // Atomic claim: only one concurrent refresh with this token may succeed.
+    // Mark the token used. If it was already used, allow it only within a short
+    // grace period (parallel tabs); a later replay means the token leaked, so
+    // the whole session is ended.
     const claimed = await this.prisma.refreshToken.updateMany({
       where: { id: stored.id, usedAt: null },
       data: { usedAt: new Date() },
     });
     if (claimed.count === 0) {
-      await this.revokeFamily(stored.family);
-      throw new UnauthorizedException('Session expired.');
+      const current = await this.prisma.refreshToken.findUnique({ where: { id: stored.id } });
+      const withinGrace =
+        current?.usedAt && !current.revokedAt && Date.now() - current.usedAt.getTime() < REFRESH_REUSE_GRACE_MS;
+      if (!withinGrace) {
+        await this.revokeFamily(stored.family);
+        throw new UnauthorizedException('Session expired.');
+      }
     }
 
     return {
@@ -122,7 +122,11 @@ export class AuthService {
     return this.toPublic(user);
   }
 
-  async changePassword(userId: string, current: string, next: string) {
+  /**
+   * Changes the password, ends every existing session, and returns fresh
+   * tokens so the device that made the change stays signed in.
+   */
+  async changePassword(userId: string, current: string, next: string): Promise<IssuedTokens> {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
     });
@@ -133,12 +137,12 @@ export class AuthService {
       where: { id: userId },
       data: { passwordHash: await hashPassword(next) },
     });
-    // Sign out every other session.
     await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
     await this.audit.log(userId, 'CHANGE_PASSWORD', 'User', userId);
+    return this.issueTokens(user);
   }
 
   private async issueTokens(user: User, family?: string): Promise<IssuedTokens> {

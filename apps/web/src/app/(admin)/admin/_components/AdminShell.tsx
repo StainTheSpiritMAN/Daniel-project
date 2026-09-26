@@ -31,8 +31,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
-    api<{ unreadMessages: number }>('/admin/dashboard')
-      .then((d) => setUnread(d.unreadMessages))
+    api<{ unread: number }>('/admin/contact-messages/unread-count')
+      .then((d) => setUnread(d.unread))
       .catch(() => {});
     setMenuOpen(false);
   }, [user, pathname]);

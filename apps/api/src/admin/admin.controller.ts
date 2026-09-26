@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { IsBoolean } from 'class-validator';
-import { Auth } from '../auth/auth.decorators';
+import { Auth, CurrentUser, type AuthUser } from '../auth/auth.decorators';
 import { ContactService } from '../contact/contact.service';
 import { ListContactQueryDto } from '../contact/dto/list-contact.dto';
 import { UpdateStatusDto } from '../contact/dto/update-status.dto';
@@ -29,6 +29,12 @@ export class AdminContactController {
   @Get()
   list(@Query() query: ListContactQueryDto) {
     return this.contactService.findAll(query);
+  }
+
+  /** Cheap poll for the sidebar badge. Declared before `:id` so it matches first. */
+  @Get('unread-count')
+  async unreadCount() {
+    return { unread: await this.contactService.countUnread() };
   }
 
   @Get(':id')
@@ -76,8 +82,9 @@ export class AdminDashboardController {
   ) {}
 
   @Get()
-  async summary() {
+  async summary(@CurrentUser() user: AuthUser) {
     const p = this.prisma;
+    const isAdmin = user.role === 'ADMIN';
     const [services, projects, gallery, clients, team, values, whyUs, media, subscribers, unread, recent] =
       await Promise.all([
         p.service.count(),
@@ -90,12 +97,13 @@ export class AdminDashboardController {
         p.media.count(),
         p.newsletterSubscriber.count({ where: { unsubscribedAt: null } }),
         this.contact.countUnread(),
-        this.audit.list(0, 5),
+        // The activity log is admin-only, so editors get no entries.
+        isAdmin ? this.audit.list(0, 5) : Promise.resolve(null),
       ]);
     return {
       counts: { services, projects, gallery, clients, team, values, whyUs, media, subscribers },
       unreadMessages: unread,
-      recentActivity: recent.items,
+      recentActivity: recent?.items ?? null,
     };
   }
 }

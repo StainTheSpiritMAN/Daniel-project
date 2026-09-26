@@ -56,11 +56,11 @@ function errorMessage(data: unknown, status: number) {
   return msg || `Something went wrong (error ${status}). Please try again.`;
 }
 
-/** JSON request to the API with cookie auth and one silent session refresh. */
-export async function api<T = unknown>(
-  path: string,
-  init: { method?: string; body?: unknown } = {},
-): Promise<T> {
+/** Endpoints where a 401 means "wrong credentials", not "session expired". */
+const NO_REFRESH = new Set(['/auth/login', '/auth/refresh', '/auth/logout']);
+
+/** Sends a request; on 401 renews the session once and retries. */
+async function request(path: string, init: { method?: string; body?: unknown } = {}) {
   const send = () =>
     fetch(`${API_URL}${path}`, {
       method: init.method ?? 'GET',
@@ -69,18 +69,35 @@ export async function api<T = unknown>(
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
     });
 
-  let res = await send();
-  if (res.status === 401 && !path.startsWith('/auth/')) {
-    if (await refreshSession()) res = await send();
-    else {
-      toLogin();
-      throw new ApiError('Your session has expired. Please sign in again.', 401);
-    }
-  }
+  const res = await send();
+  if (res.status !== 401 || NO_REFRESH.has(path)) return res;
+  if (await refreshSession()) return send();
+  toLogin();
+  throw new ApiError('Your session has expired. Please sign in again.', 401);
+}
 
+/** JSON request to the API with cookie auth and one silent session refresh. */
+export async function api<T = unknown>(
+  path: string,
+  init: { method?: string; body?: unknown } = {},
+): Promise<T> {
+  const res = await request(path, init);
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(errorMessage(data, res.status), res.status, data);
   return data as T;
+}
+
+/** Downloads a file from the API (with session refresh) and saves it. */
+export async function download(path: string, filename: string) {
+  const res = await request(path);
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(errorMessage(data, res.status), res.status, data);
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /** Multipart upload with progress (videos can be large). */

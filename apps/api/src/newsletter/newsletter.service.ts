@@ -34,7 +34,12 @@ export class NewsletterService {
       where: { unsubscribedAt: null },
       orderBy: { createdAt: 'asc' },
     });
-    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    // Quote every cell, and defuse values a spreadsheet would run as a formula
+    // (CSV injection) — emails come from the public form.
+    const escape = (v: string) => {
+      const safe = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+      return `"${safe.replace(/"/g, '""')}"`;
+    };
     return [
       'email,subscribed_at',
       ...rows.map((r) => `${escape(r.email)},${r.createdAt.toISOString()}`),

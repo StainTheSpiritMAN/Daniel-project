@@ -29,9 +29,10 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   async login(
     @Body() dto: LoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { user, tokens } = await this.auth.login(dto.email, dto.password);
+    const { user, tokens } = await this.auth.login(dto.email, dto.password, req.ip ?? 'unknown');
     this.setCookies(res, tokens);
     return { user };
   }
@@ -78,12 +79,14 @@ export class AuthController {
   async changePassword(
     @CurrentUser() user: AuthUser,
     @Body() dto: ChangePasswordDto,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    await this.auth.changePassword(
+    const tokens = await this.auth.changePassword(
       user.id,
       dto.currentPassword,
       dto.newPassword,
     );
+    this.setCookies(res, tokens);
     return { success: true, message: 'Password updated.' };
   }
 

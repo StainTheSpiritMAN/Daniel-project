@@ -7,7 +7,7 @@ import {
   PayloadTooLargeException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MediaKind, Prisma } from '@prisma/client';
+import { MediaKind, Prisma, type Media } from '@prisma/client';
 import { execFile } from 'child_process';
 import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
@@ -17,7 +17,7 @@ import { promisify } from 'util';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import type { AppConfig } from '../config/configuration';
-import { detectFileType, MAX_BYTES } from './file-signature';
+import { detectFileType, MAX_BYTES, UnsupportedFileError, type DetectedType } from './file-signature';
 
 const run = promisify(execFile);
 
@@ -77,7 +77,13 @@ export class MediaService {
       await handle.close();
     }
 
-    const type = detectFileType(head);
+    let type: DetectedType | null;
+    try {
+      type = detectFileType(head);
+    } catch (error) {
+      if (error instanceof UnsupportedFileError) throw new BadRequestException(error.message);
+      throw error;
+    }
     if (!type) {
       throw new BadRequestException(
         'Unsupported file type. Allowed: JPG, PNG, WebP, MP4, WebM, PDF.',
@@ -100,35 +106,40 @@ export class MediaService {
     let variants: MediaVariants = {};
     const mainPath = `${publicDir}/${base}.${type.ext}`;
 
-    if (type.kind === 'IMAGE') {
-      ({ width, height, variants } = await this.processImage(
-        sourcePath,
-        type.ext,
-        publicDir,
-        base,
-      ));
-    } else {
-      await fs.copyFile(sourcePath, this.toDisk(mainPath));
-      if (type.kind === 'VIDEO') {
-        const poster = await this.extractPoster(this.toDisk(mainPath), `${publicDir}/${base}-poster.jpg`);
-        if (poster) variants = { poster };
+    let media: Media;
+    try {
+      if (type.kind === 'IMAGE') {
+        ({ width, height, variants } = await this.processImage(sourcePath, type.ext, publicDir, base));
+      } else {
+        await fs.copyFile(sourcePath, this.toDisk(mainPath));
+        if (type.kind === 'VIDEO') {
+          const poster = await this.extractPoster(this.toDisk(mainPath), `${publicDir}/${base}-poster.jpg`);
+          if (poster) variants = { poster };
+        }
       }
-    }
 
-    const media = await this.prisma.media.create({
-      data: {
-        filename: parse(originalName).name.slice(0, 120) || base,
-        path: mainPath,
-        mimeType: type.mime,
-        kind: type.kind,
-        alt: alt.trim(),
-        width,
-        height,
-        sizeBytes: size,
-        variants: variants as Prisma.InputJsonValue,
-        uploadedById: uploadedById ?? null,
-      },
-    });
+      media = await this.prisma.media.create({
+        data: {
+          filename: parse(originalName).name.slice(0, 120) || base,
+          path: mainPath,
+          mimeType: type.mime,
+          kind: type.kind,
+          alt: alt.trim(),
+          width,
+          height,
+          sizeBytes: size,
+          variants: variants as Prisma.InputJsonValue,
+          uploadedById: uploadedById ?? null,
+        },
+      });
+    } catch (error) {
+      // Every file from this upload starts with the unique `base`; remove
+      // whatever was written so failed uploads leave nothing behind.
+      const dir = join(this.uploads.dir, folder);
+      const leftovers = (await fs.readdir(dir)).filter((f) => f.startsWith(`${base}.`) || f.startsWith(`${base}-`));
+      await Promise.all(leftovers.map((f) => fs.rm(join(dir, f), { force: true })));
+      throw error;
+    }
     await this.audit.log(uploadedById ?? null, 'UPLOAD', 'Media', media.id, {
       filename: media.filename,
       kind: media.kind,
@@ -137,6 +148,16 @@ export class MediaService {
   }
 
   private async processImage(source: string, ext: string, publicDir: string, base: string) {
+    try {
+      return await this.renderImage(source, ext, publicDir, base);
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.warn(`Image processing failed: ${(error as Error).message}`);
+      throw new BadRequestException('This image could not be read — it may be damaged. Try exporting it again.');
+    }
+  }
+
+  private async renderImage(source: string, ext: string, publicDir: string, base: string) {
     // `.rotate()` applies EXIF orientation; sharp drops all metadata (GPS etc.)
     // on output because `.withMetadata()` is never called.
     const input = sharp(source, { failOn: 'error' }).rotate();

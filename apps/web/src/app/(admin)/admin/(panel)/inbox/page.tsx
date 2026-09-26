@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import { api, API_URL } from '../../_lib/api';
+import { api, download } from '../../_lib/api';
 import { ErrorBox, formatDate, PageTitle, Spinner, useToast } from '../../_components/ui';
 
 type Status = 'NEW' | 'READ' | 'ARCHIVED';
@@ -160,9 +160,17 @@ function Newsletter() {
     <div>
       <div className="mb-3 flex items-center justify-between gap-3">
         <p className="text-sm text-charcoal-700">{active} active subscriber{active === 1 ? '' : 's'}</p>
-        <a className="adm-btn" href={`${API_URL}/admin/newsletter/export.csv`}>
+        <button
+          type="button"
+          className="adm-btn"
+          onClick={() =>
+            download('/admin/newsletter/export.csv', 'newsletter-subscribers.csv').catch((e) =>
+              notify((e as Error).message, 'error'),
+            )
+          }
+        >
           Download CSV
-        </a>
+        </button>
       </div>
       {error && <ErrorBox message={error} />}
       {!items && !error && <Spinner />}

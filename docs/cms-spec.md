@@ -258,6 +258,9 @@ Each phase leaves `main` deployable. Estimated effort: phases 1–2 ≈ 2 days, 
 - **Contact submissions** reuse the existing `ContactMessage` model (status `NEW/READ/ARCHIVED` instead of `readAt`); IP and user agent are now recorded.
 - **Client logos** are seeded as "Client 01…11" because the brochure logos are not labelled — staff should rename them.
 - **Revalidation**: measured at ~0.1 s from publish to live on `next start`. Builds succeed without the API (sections render empty until the first revalidation), so the API should be up before `next build` on the server.
+- **Login limiting** is per (IP address + email) — 10 failures/hour — instead of locking the account, so nobody can lock a real user out, and the reply is identical for unknown emails.
+- **Refresh tokens** have a 30-second reuse grace period so parallel tabs don't trigger theft detection; a replay after that still ends the session.
+- **Uploads** reject HEIC/AVIF photos and QuickTime .mov files with advice to convert them, and failed uploads leave no files behind.
 - **Tests**: verified with scripted API smoke tests and a Playwright run of the admin flows; an automated e2e suite in the repo is still to do.
 
 ## 15. Open questions (answer before Phase 6)
