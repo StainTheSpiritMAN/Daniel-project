@@ -44,6 +44,8 @@ const PREVIEW: Record<string, string> = {
   servicesPage: '/services',
   projectsPage: '/projects',
   contactPage: '/contact',
+  newsPage: '/news',
+  company: '/contact',
   layout: '/',
 };
 

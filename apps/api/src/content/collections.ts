@@ -120,6 +120,7 @@ export const COLLECTIONS: CollectionDef[] = [
     media: [{ field: 'imageId', relation: 'image' }],
     label: (r) => String(r.title),
     orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
-    toData: (dto) => (typeof dto.date === 'string' ? { ...dto, date: new Date(`${dto.date}T00:00:00Z`) } : dto),
+    toData: (dto) =>
+      typeof dto.date === 'string' ? { ...dto, date: new Date(`${dto.date.slice(0, 10)}T00:00:00Z`) } : dto,
   },
 ];

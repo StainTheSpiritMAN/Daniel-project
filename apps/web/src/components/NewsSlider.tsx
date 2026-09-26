@@ -23,6 +23,8 @@ export function NewsSlider({ slides, seconds }: { slides: NewsSlide[]; seconds: 
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  /** Card currently at the left edge (differs from `active` at the track's end). */
+  const leftIndex = useRef(0);
 
   const cards = () => Array.from(track.current?.children ?? []) as HTMLElement[];
 
@@ -33,6 +35,16 @@ export function NewsSlider({ slides, seconds }: { slides: NewsSlide[]; seconds: 
     const i = (index + items.length) % items.length;
     el.scrollTo({ left: items[i].offsetLeft - items[0].offsetLeft, behavior: 'smooth' });
   }, []);
+
+  // Several cards fit on wide screens, so the track can reach its end before
+  // the last card is at the left edge: wrap from there instead.
+  const atEnd = () => {
+    const el = track.current;
+    return !!el && el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+  };
+  const next = useCallback(() => (atEnd() ? goTo(0) : goTo(leftIndex.current + 1)), [goTo]);
+  // From the first card, goTo(-1) wraps to the last card (the end of the track).
+  const prev = useCallback(() => goTo(leftIndex.current - 1), [goTo]);
 
   // Track which card is nearest the left edge (for the dots).
   useEffect(() => {
@@ -45,7 +57,9 @@ export function NewsSlider({ slides, seconds }: { slides: NewsSlide[]; seconds: 
       items.forEach((c, i) => {
         if (Math.abs(c.offsetLeft - left) < Math.abs(items[best].offsetLeft - left)) best = i;
       });
-      setActive(best);
+      leftIndex.current = best;
+      // At the end of the track the last card is fully visible.
+      setActive(el.scrollLeft + el.clientWidth >= el.scrollWidth - 8 ? items.length - 1 : best);
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
@@ -56,13 +70,10 @@ export function NewsSlider({ slides, seconds }: { slides: NewsSlide[]; seconds: 
     if (!seconds || paused || slides.length < 2) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = setInterval(() => {
-      const el = track.current;
-      if (!el || document.hidden) return;
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-      goTo(atEnd ? 0 : active + 1);
+      if (!document.hidden) next();
     }, seconds * 1000);
     return () => clearInterval(timer);
-  }, [seconds, paused, active, slides.length, goTo]);
+  }, [seconds, paused, slides.length, next]);
 
   const arrow =
     'hidden h-11 w-11 items-center justify-center rounded-full bg-white text-charcoal-900 shadow-lg ring-1 ring-charcoal-100 transition hover:bg-gold hover:text-on-gold md:flex';
@@ -120,7 +131,7 @@ export function NewsSlider({ slides, seconds }: { slides: NewsSlide[]; seconds: 
 
       {slides.length > 1 && (
         <div className="flex items-center justify-center gap-4">
-          <button type="button" className={arrow} onClick={() => goTo(active - 1)} aria-label="Previous">
+          <button type="button" className={arrow} onClick={prev} aria-label="Previous">
             <ArrowIcon className="h-5 w-5 rotate-180" />
           </button>
           <div className="flex gap-2">
@@ -135,7 +146,7 @@ export function NewsSlider({ slides, seconds }: { slides: NewsSlide[]; seconds: 
               />
             ))}
           </div>
-          <button type="button" className={arrow} onClick={() => goTo(active + 1)} aria-label="Next">
+          <button type="button" className={arrow} onClick={next} aria-label="Next">
             <ArrowIcon className="h-5 w-5" />
           </button>
         </div>

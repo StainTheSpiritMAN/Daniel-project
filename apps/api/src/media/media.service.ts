@@ -34,6 +34,8 @@ export type MediaVariants = Partial<Record<keyof typeof SIZES, Rendition>> & {
 
 const ICON_SIZES = [32, 180, 192, 512];
 
+const KIND_NAME: Record<MediaKind, string> = { IMAGE: 'an image', VIDEO: 'a video', DOCUMENT: 'a document' };
+
 export type IngestInput = {
   /** Path to the uploaded file on local disk (it is not modified). */
   sourcePath: string;
@@ -321,8 +323,16 @@ export class MediaService {
   }
 
   /** Asserts that referenced media ids exist (and, for images, have alt text). */
-  async assertUsable(ids: (string | null | undefined)[], opts: { requireAlt?: boolean } = {}) {
-    const wanted = [...new Set(ids.filter((id): id is string => !!id))];
+  /**
+   * Asserts that referenced media exist, are the expected kind (an image field
+   * cannot hold a video or PDF) and, for images, have alt text.
+   */
+  async assertUsable(
+    refs: { id: string | null | undefined; kind: MediaKind }[],
+    opts: { requireAlt?: boolean } = {},
+  ) {
+    const used = refs.filter((r): r is { id: string; kind: MediaKind } => !!r.id);
+    const wanted = [...new Set(used.map((r) => r.id))];
     if (!wanted.length) return;
     const found = await this.prisma.media.findMany({
       where: { id: { in: wanted } },
@@ -330,6 +340,14 @@ export class MediaService {
     });
     const missing = wanted.filter((id) => !found.some((m) => m.id === id));
     if (missing.length) throw new BadRequestException('Selected media no longer exists.');
+    for (const ref of used) {
+      const media = found.find((m) => m.id === ref.id)!;
+      if (media.kind !== ref.kind) {
+        throw new BadRequestException(
+          `"${media.filename}" is ${KIND_NAME[media.kind]}, but this field needs ${KIND_NAME[ref.kind]}.`,
+        );
+      }
+    }
     if (opts.requireAlt !== false) {
       const noAlt = found.filter((m) => m.kind === MediaKind.IMAGE && !m.alt.trim());
       if (noAlt.length) {

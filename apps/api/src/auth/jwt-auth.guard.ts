@@ -27,7 +27,7 @@ export class JwtAuthGuard implements CanActivate {
       req.header('authorization')?.replace(/^Bearer\s+/i, '');
     if (!token) throw new UnauthorizedException('Not signed in.');
 
-    let payload: { sub: string };
+    let payload: { sub: string; iat?: number };
     try {
       payload = await this.jwt.verifyAsync(token);
     } catch {
@@ -36,10 +36,15 @@ export class JwtAuthGuard implements CanActivate {
 
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true, name: true, role: true, isActive: true },
+      select: { id: true, email: true, name: true, role: true, isActive: true, sessionsValidFrom: true },
     });
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Account is disabled.');
+    }
+    // Tokens from before a password change/reset are no longer accepted.
+    // (`iat` is in whole seconds, so compare at that precision.)
+    if (user.sessionsValidFrom && (payload.iat ?? 0) < Math.floor(user.sessionsValidFrom.getTime() / 1000)) {
+      throw new UnauthorizedException('Session expired.');
     }
 
     (req as Request & { user: unknown }).user = {

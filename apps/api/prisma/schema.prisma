@@ -23,6 +23,9 @@ model User {
   role               Role           @default(EDITOR)
   isActive           Boolean        @default(true)
   lastLoginAt        DateTime?
+  /// Access tokens issued before this moment are rejected (set on password
+  /// change/reset and deactivation, so stolen sessions end immediately).
+  sessionsValidFrom  DateTime?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   refreshTokens      RefreshToken[]

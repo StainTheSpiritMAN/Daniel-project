@@ -26,14 +26,19 @@ function Messages() {
   const [open, setOpen] = useState<Message | null>(null);
   const [error, setError] = useState('');
 
-  const load = useCallback(() => {
-    const q = filter ? `?status=${filter}&take=100` : '?take=100';
-    api<{ items: Message[]; total: number }>(`/admin/contact-messages${q}`)
-      .then(setData)
-      .catch((e) => setError(e.message));
-  }, [filter]);
+  /** Loads a page of messages; `skip > 0` appends to the list ("Load more"). */
+  const load = useCallback(
+    (skip = 0) => {
+      const params = new URLSearchParams({ skip: String(skip), take: '50' });
+      if (filter) params.set('status', filter);
+      api<{ items: Message[]; total: number }>(`/admin/contact-messages?${params}`)
+        .then((res) => setData((prev) => (skip && prev ? { ...res, items: [...prev.items, ...res.items] } : res)))
+        .catch((e) => setError(e.message));
+    },
+    [filter],
+  );
 
-  useEffect(load, [load]);
+  useEffect(() => load(0), [load]);
 
   async function setStatus(m: Message, status: Status) {
     try {
@@ -90,6 +95,13 @@ function Messages() {
               </li>
             ))}
           </ul>
+        )}
+        {data && data.items.length < data.total && (
+          <div className="mt-3 text-center">
+            <button type="button" className="adm-btn" onClick={() => load(data.items.length)}>
+              Load more ({data.total - data.items.length} older)
+            </button>
+          </div>
         )}
       </div>
 

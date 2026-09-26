@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Prisma, Role } from '@prisma/client';
+import { MediaKind, type Prisma, type Role } from '@prisma/client';
 import { instanceToPlain, plainToInstance } from 'class-transformer';
 import { validate, type ValidationError } from 'class-validator';
 import { PrismaService } from '../prisma/prisma.service';
@@ -21,6 +21,19 @@ function collectMediaIds(value: unknown, out = new Set<string>()): Set<string> {
     for (const [k, v] of Object.entries(value)) {
       if (k.endsWith('Id') && typeof v === 'string' && v) out.add(v);
       else collectMediaIds(v, out);
+    }
+  }
+  return out;
+}
+
+/** Media references with the kind each field expects (`video…Id` → video, else image). */
+function collectMediaRefs(value: unknown, out: { id: string; kind: MediaKind }[] = []) {
+  if (Array.isArray(value)) value.forEach((v) => collectMediaRefs(v, out));
+  else if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value)) {
+      if (k.endsWith('Id') && typeof v === 'string' && v) {
+        out.push({ id: v, kind: /^video/i.test(k) ? MediaKind.VIDEO : MediaKind.IMAGE });
+      } else collectMediaRefs(v, out);
     }
   }
   return out;
@@ -87,7 +100,7 @@ export class SettingsService {
     if (errors.length) throw new BadRequestException(flattenErrors(errors));
 
     const value = instanceToPlain(instance) as Prisma.InputJsonObject;
-    await this.media.assertUsable([...collectMediaIds(value)]);
+    await this.media.assertUsable(collectMediaRefs(value));
     if (key === 'theme' && value.preset === 'custom' && (!value.brand || !value.dark)) {
       throw new BadRequestException('A custom theme needs both a brand colour and a dark colour.');
     }
@@ -114,7 +127,9 @@ export class SettingsService {
   /** Each page may only list its own sections, once each. */
   private checkLayout(value: Prisma.InputJsonObject) {
     for (const [page, sections] of Object.entries(value)) {
+      if (sections === null || sections === undefined) continue;
       const allowed = LAYOUT_SECTIONS[page];
+      if (!Array.isArray(sections)) throw new BadRequestException(`Invalid sections for the ${page} page.`);
       const keys = (sections as { key: string }[]).map((s) => s.key);
       if (!allowed || keys.some((k) => !allowed.includes(k)) || new Set(keys).size !== keys.length) {
         throw new BadRequestException(`Invalid sections for the ${page} page.`);

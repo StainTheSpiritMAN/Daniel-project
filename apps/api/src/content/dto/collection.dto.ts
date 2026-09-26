@@ -3,7 +3,6 @@ import { ContentStatus } from '@prisma/client';
 import {
   ArrayMaxSize,
   IsArray,
-  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -111,7 +110,7 @@ export class NewsPostDto extends StatusFields {
   @IsString() @IsNotEmpty() @MaxLength(140)
   title!: string;
 
-  @IsDateString({ strict: true }, { message: 'date must be a date like 2026-09-26' })
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'date must be a date like 2026-09-26' })
   date!: string;
 
   @IsString() @IsNotEmpty() @MaxLength(200)

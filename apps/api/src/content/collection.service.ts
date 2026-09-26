@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ContentStatus, type Prisma } from '@prisma/client';
+import { ContentStatus, MediaKind, type Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService, diffFields } from '../audit/audit.service';
 import { RevalidateService } from '../common/revalidate.service';
@@ -121,6 +121,9 @@ export class CollectionService {
   }
 
   private checkMedia(def: CollectionDef, dto: Record<string, unknown>) {
-    return this.media.assertUsable(def.media.map((m) => dto[m.field] as string | null | undefined));
+    // Every media field on a collection is an image.
+    return this.media.assertUsable(
+      def.media.map((m) => ({ id: dto[m.field] as string | null | undefined, kind: MediaKind.IMAGE })),
+    );
   }
 }

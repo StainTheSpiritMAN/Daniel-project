@@ -1,5 +1,5 @@
 import type { Client } from '@/lib/cms';
-import { mediaUrl } from '@/lib/media';
+import { renditionUrl } from '@/lib/media';
 
 export function ClientLogos({ clients }: { clients: Client[] }) {
   const withLogos = clients.filter((c) => c.logo);
@@ -9,7 +9,7 @@ export function ClientLogos({ clients }: { clients: Client[] }) {
         const logo = (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={mediaUrl(client.logo!.path)}
+            src={renditionUrl(client.logo!)}
             alt={client.logo!.alt || client.name}
             className="max-h-full max-w-full object-contain"
             loading="lazy"

@@ -435,7 +435,8 @@ export function emptyValue(fields: Field[]): Record<string, unknown> {
         case 'range':
           return [f.name, f.defaultValue];
         case 'date':
-          return [f.name, new Date().toISOString().slice(0, 10)];
+          // Today in the editor's own time zone ("en-CA" formats as YYYY-MM-DD).
+          return [f.name, new Date().toLocaleDateString('en-CA')];
         default:
           return [f.name, ''];
       }

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
 import { PageHeader } from '@/components/PageHeader';
-import { RichText } from '@/components/RichText';
+import { InlineText, RichText } from '@/components/RichText';
 import { getNews, getSettings } from '@/lib/cms';
 import { resolveLayout } from '@/lib/layout';
 import { formatNewsDate } from '@/lib/media';
@@ -60,7 +60,9 @@ export default async function NewsPage() {
                 <h2 className="mt-2 text-2xl font-extrabold text-charcoal-900">
                   {post.title}
                 </h2>
-                <p className="mt-2 font-semibold text-charcoal-800">{post.highlight}</p>
+                <p className="mt-2 font-semibold text-charcoal-800">
+                  <InlineText text={post.highlight} />
+                </p>
                 <div className="mt-4 space-y-3 leading-relaxed text-charcoal-700">
                   <RichText text={post.body} />
                 </div>

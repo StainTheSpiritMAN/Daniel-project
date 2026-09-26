@@ -79,6 +79,8 @@ export class UsersService {
       email: dto.email?.toLowerCase().trim(),
     };
     if (dto.password) data.passwordHash = await hashPassword(dto.password);
+    // End the user's existing sessions immediately, not just at token expiry.
+    if (dto.password || deactivating) data.sessionsValidFrom = new Date();
 
     const user = await this.prisma.user.update({
       where: { id },
