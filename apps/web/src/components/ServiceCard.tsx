@@ -1,16 +1,16 @@
 import Link from 'next/link';
-import type { Service } from '@/data/company';
-import { serviceIcons, ArrowIcon } from './Icons';
+import type { Service } from '@/lib/cms';
+import { serviceIcon, ArrowIcon } from './Icons';
 
 export function ServiceCard({ service }: { service: Service }) {
-  const Icon = serviceIcons[service.slug];
+  const Icon = serviceIcon(service.slug);
   return (
     <Link
       href={`/services#${service.slug}`}
       className="group flex flex-col rounded-xl border border-charcoal-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gold-200 hover:shadow-lg"
     >
       <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-gold-50 text-gold-600 transition group-hover:bg-gold group-hover:text-charcoal-900">
-        {Icon ? <Icon /> : null}
+        <Icon />
       </span>
       <h3 className="text-lg font-bold text-charcoal-900">{service.title}</h3>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-charcoal-700">

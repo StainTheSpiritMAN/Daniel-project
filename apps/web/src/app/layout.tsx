@@ -1,35 +1,34 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
 import { siteConfig } from '@/lib/config';
-import { company } from '@/data/company';
+import { getSettings } from '@/lib/cms';
+import { mediaUrl } from '@/lib/media';
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.siteUrl),
-  title: {
-    default: `${company.name} — ${company.tagline}`,
-    template: `%s | ${company.shortName}`,
-  },
-  description: company.intro,
-  keywords: [
-    'Suburban Integrated Services',
-    'smart home automation Nigeria',
-    'solar power solutions',
-    'renewable energy',
-    'CCTV installation',
-    'IT consulting',
-    'inverter installation',
-    'Rivers State',
-  ],
-  openGraph: {
-    title: `${company.name} — ${company.tagline}`,
-    description: company.intro,
-    url: siteConfig.siteUrl,
-    siteName: company.name,
-    type: 'website',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { company, seo, media } = await getSettings();
+  const name = company?.name ?? siteConfig.siteName;
+  const title = seo?.defaultTitle ?? name;
+  const description = seo?.defaultDescription ?? company?.intro;
+  const ogImage = mediaUrl(media(seo?.ogImageId)?.path);
+
+  return {
+    metadataBase: new URL(siteConfig.siteUrl),
+    title: {
+      default: title,
+      template: `%s | ${company?.shortName ?? name}`,
+    },
+    description,
+    keywords: seo?.keywords,
+    openGraph: {
+      title,
+      description,
+      url: siteConfig.siteUrl,
+      siteName: name,
+      type: 'website',
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
+  };
+}
 
 export default function RootLayout({
   children,
@@ -38,11 +37,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+      <body className="flex min-h-screen flex-col">{children}</body>
     </html>
   );
 }

@@ -1,7 +1,11 @@
 import Link from 'next/link';
-import { company } from '@/data/company';
-
-export function Logo({ light = false }: { light?: boolean }) {
+export function Logo({
+  light = false,
+  tagline,
+}: {
+  light?: boolean;
+  tagline: string;
+}) {
   return (
     <Link href="/" className="group flex items-center gap-2.5">
       <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold text-lg font-black text-charcoal-900 shadow-sm transition group-hover:scale-105">
@@ -20,7 +24,7 @@ export function Logo({ light = false }: { light?: boolean }) {
             light ? 'text-gold-200' : 'text-gold-600'
           }`}
         >
-          {company.tagline}
+          {tagline}
         </span>
       </span>
     </Link>

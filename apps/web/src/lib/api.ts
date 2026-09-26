@@ -7,6 +7,8 @@ export type ContactPayload = {
   service?: string;
   subject?: string;
   message: string;
+  /** Honeypot; must stay empty. */
+  website?: string;
 };
 
 type ApiResult = { success: boolean; message: string };

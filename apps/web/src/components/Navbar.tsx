@@ -4,16 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Logo } from './Logo';
-import { navLinks } from '@/data/company';
+import { navLinks } from '@/lib/navigation';
 
-export function Navbar() {
+export function Navbar({ tagline }: { tagline: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-charcoal-100 bg-white/90 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <Logo />
+        <Logo tagline={tagline} />
 
         <nav className="hidden items-center gap-1 md:flex">
           {navLinks.map((link) => {

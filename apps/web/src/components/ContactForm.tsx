@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { sendContactMessage, type ContactPayload } from '@/lib/api';
-import { services } from '@/data/company';
 
 const empty: ContactPayload = {
   name: '',
@@ -11,9 +10,10 @@ const empty: ContactPayload = {
   service: '',
   subject: '',
   message: '',
+  website: '',
 };
 
-export function ContactForm() {
+export function ContactForm({ services }: { services: string[] }) {
   const [form, setForm] = useState<ContactPayload>(empty);
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>(
     'idle',
@@ -44,6 +44,17 @@ export function ContactForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      {/* Honeypot: hidden from people; bots that fill it are ignored by the API. */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="hidden"
+        value={form.website}
+        onChange={(e) => update('website', e.target.value)}
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-charcoal-800">
@@ -91,9 +102,9 @@ export function ContactForm() {
             className={inputClass}
           >
             <option value="">Select a service</option>
-            {services.map((s) => (
-              <option key={s.slug} value={s.title}>
-                {s.title}
+            {services.map((title) => (
+              <option key={title} value={title}>
+                {title}
               </option>
             ))}
           </select>

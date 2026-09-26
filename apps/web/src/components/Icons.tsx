@@ -64,3 +64,6 @@ export const serviceIcons: Record<string, (p: IconProps) => ReactElement> = {
   'professional-training-capacity-building': TrainingIcon,
   'it-general-consulting': ConsultingIcon,
 };
+
+/** Services added in the CMS with a new slug fall back to the consulting icon. */
+export const serviceIcon = (slug: string) => serviceIcons[slug] ?? ConsultingIcon;

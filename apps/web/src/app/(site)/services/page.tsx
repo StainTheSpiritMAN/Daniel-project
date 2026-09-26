@@ -1,53 +1,42 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
-import { CheckIcon, serviceIcons } from '@/components/Icons';
-import { services } from '@/data/company';
+import { PageHeader } from '@/components/PageHeader';
+import { CheckIcon, serviceIcon } from '@/components/Icons';
+import { getServices, getSettings } from '@/lib/cms';
 
-export const metadata: Metadata = {
-  title: 'Services',
-  description:
-    'Smart home & building automation, power solutions & renewable energy, professional training, and IT & general consulting from Suburban Integrated Services.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { servicesPage } = await getSettings();
+  return { title: 'Services', description: servicesPage?.metaDescription };
+}
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const [{ servicesPage, cta, media }, services] = await Promise.all([
+    getSettings(),
+    getServices(),
+  ]);
+
   return (
     <>
-      <section className="relative overflow-hidden bg-charcoal-900 py-16 text-white md:py-20">
-        <Image
-          src="/images/projects/rooftop-solar-array.jpg"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover opacity-25"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal-900 via-charcoal-900/90 to-charcoal-900/60" />
-        <div className="container relative">
-          <span className="eyebrow text-gold-200">Our Services</span>
-          <h1 className="text-4xl font-extrabold md:text-5xl">
-            Solutions tailored to your needs
-          </h1>
-          <p className="mt-4 max-w-2xl text-charcoal-100/75">
-            We deliver world-class services with a deep understanding of local
-            challenges and global standards.
-          </p>
-        </div>
-      </section>
+      <PageHeader
+        heading={servicesPage?.header}
+        image={media(servicesPage?.headerImageId)}
+      />
 
       <section className="section">
         <div className="container space-y-20">
           {services.map((service, idx) => {
-            const Icon = serviceIcons[service.slug];
+            const Icon = serviceIcon(service.slug);
             const reversed = idx % 2 === 1;
             return (
               <div
-                key={service.slug}
+                key={service.id}
                 id={service.slug}
                 className="scroll-mt-24 grid gap-8 lg:grid-cols-2 lg:items-center"
               >
                 <div className={reversed ? 'lg:order-2' : ''}>
                   <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-gold text-charcoal-900">
-                    {Icon ? <Icon className="h-7 w-7" /> : null}
+                    <Icon className="h-7 w-7" />
                   </span>
                   <h2 className="mt-5 text-2xl font-extrabold text-charcoal-900 md:text-3xl">
                     {service.title}
@@ -61,15 +50,17 @@ export default function ServicesPage() {
                     reversed ? 'lg:order-1' : ''
                   }`}
                 >
-                  <div className="relative aspect-video">
-                    <Image
-                      src={service.image}
-                      alt={service.imageAlt}
-                      fill
-                      sizes="(min-width: 1024px) 50vw, 100vw"
-                      className="object-cover"
-                    />
-                  </div>
+                  {service.image && (
+                    <div className="relative aspect-video">
+                      <Image
+                        src={service.image.path}
+                        alt={service.image.alt}
+                        fill
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
                   <ul className="space-y-3 p-8">
                     {service.items.map((item) => (
                       <li key={item} className="flex gap-3">
@@ -87,7 +78,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <CTASection />
+      <CTASection cta={cta} />
     </>
   );
 }

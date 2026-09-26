@@ -11,8 +11,9 @@ Repository: <https://github.com/StainTheSpiritMAN/Daniel-project>
 ```
 suburban/
 ├── apps/
-│   ├── api/   # NestJS + Prisma (PostgreSQL) — contact form, newsletter, health
-│   └── web/   # Next.js (App Router) + Tailwind — public marketing site
+│   ├── api/   # NestJS + Prisma (PostgreSQL) — CMS API: auth, content, media, settings, inbox
+│   └── web/   # Next.js (App Router) + Tailwind — public site + /admin dashboard
+├── docs/      # CMS specification and the editor guide for staff
 └── package.json   # npm workspaces + dev/build scripts
 ```
 
@@ -38,7 +39,14 @@ cp apps/web/.env.example apps/web/.env.local
 # 3. Create the database and run migrations
 createdb suburban                      # if it doesn't exist
 npm run prisma:migrate                 # generates client + applies migrations
+
+# 4. Load the current site content, media and the first admin account
+npm run seed                           # safe to re-run; never overwrites edits
 ```
+
+The seed creates the first admin from `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`
+(only if there are no users yet). Sign in at http://localhost:3000/admin and change
+the password under **My account**.
 
 ## Running
 
@@ -49,6 +57,7 @@ npm run dev:web    # web only
 ```
 
 - Web: http://localhost:3000
+- Admin dashboard: http://localhost:3000/admin
 - API: http://localhost:4000/api  (health check: `/api/health`)
 
 ## Build & production
@@ -69,7 +78,11 @@ npm run start:web          # next start         (apps/web)
 | `API_PORT` | Port the API listens on | `4000` |
 | `API_GLOBAL_PREFIX` | URL prefix for all routes | `api` |
 | `CORS_ORIGINS` | Comma-separated allowed origins | `http://localhost:3000` |
-| `ADMIN_API_KEY` | Secret for admin routes (`x-admin-key` header) | — |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Session signing secrets (`openssl rand -base64 48`) | — (required) |
+| `COOKIE_SECURE` / `COOKIE_DOMAIN` | Session cookie flags | `true` in production / _empty_ |
+| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` / `SEED_ADMIN_NAME` | First admin, created by `npm run seed` | — |
+| `UPLOAD_DIR` | Where uploaded media is stored (served at `/uploads`) | `./uploads` |
+| `WEB_URL` / `REVALIDATE_SECRET` | Site to notify after content changes, and the shared secret | `http://localhost:3000` / — |
 | `DATABASE_URL` | PostgreSQL connection string (Prisma) | — (required) |
 | `SMTP_HOST` | SMTP host. **Empty → emails are logged to console** | _empty_ |
 | `SMTP_PORT` / `SMTP_SECURE` | SMTP port / TLS flag | `587` / `false` |
@@ -83,41 +96,44 @@ npm run start:web          # next start         (apps/web)
 | `NEXT_PUBLIC_API_URL` | Base URL of the API incl. prefix (e.g. `http://localhost:4000/api`) |
 | `NEXT_PUBLIC_SITE_NAME` | Site name used in metadata |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL |
+| `API_INTERNAL_URL` | Optional server-side API address (e.g. `http://127.0.0.1:4000/api`) |
+| `REVALIDATE_SECRET` | Must equal the API's `REVALIDATE_SECRET` |
 
 ## API endpoints
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/health` | Health check |
-| `POST` | `/api/contact` | Submit a contact-form enquiry (stored + emailed) |
-| `POST` | `/api/newsletter/subscribe` | Subscribe an email to updates |
-| `GET` | `/api/admin/contact-messages` | List submissions (filter `?status=NEW\|READ\|ARCHIVED`, paginate `?skip=&take=`) — **admin** |
-| `GET` | `/api/admin/contact-messages/:id` | Fetch a single submission — **admin** |
-| `PATCH` | `/api/admin/contact-messages/:id/status` | Update status `{ "status": "READ" }` — **admin** |
+Public (read-only, published content only): `GET /api/services`, `/projects`, `/gallery`,
+`/clients`, `/team`, `/values`, `/why-us`, `/settings`, `/settings/:key`; intake
+`POST /api/contact` and `POST /api/newsletter/subscribe` (rate-limited, honeypot).
 
-**Admin auth:** admin routes require the `ADMIN_API_KEY` value sent as an
-`x-admin-key` header (or `Authorization: Bearer <key>`). Example:
+Staff (session cookie from `POST /api/auth/login`):
 
-```bash
-curl -H "x-admin-key: $ADMIN_API_KEY" http://localhost:4000/api/admin/contact-messages
-```
+| Path | Purpose |
+| --- | --- |
+| `/api/auth/*` | `login`, `refresh`, `logout`, `me`, `change-password` |
+| `/api/admin/{collection}` | CRUD, `POST /reorder`, `POST /:id/publish` · `/unpublish` for each collection above |
+| `/api/admin/settings/:key` | `GET` / `PUT` one settings block (validated per key) |
+| `/api/admin/media` | Upload (multipart `file`), list, edit alt text, delete (blocked while in use) |
+| `/api/admin/contact-messages`, `/api/admin/newsletter` | Inbox, subscriber list, `export.csv` |
+| `/api/admin/users`, `/api/admin/audit` | User management and activity log — **admins only** |
 
-## Content
+## Content (CMS)
 
-All marketing copy (about, services, projects, management, etc.) is transcribed from the
-corporate profile and lives in [`apps/web/src/data/company.ts`](apps/web/src/data/company.ts).
-Edit that single file to update content across the whole site.
+All site content — copy, photos, hero video, services, projects, gallery, clients, team,
+contact details and SEO — is stored in PostgreSQL and edited at **`/admin`**. Publishing
+refreshes the affected pages within seconds (on-demand revalidation, with a 5-minute
+fallback). Page layout and design stay in code on purpose.
 
-Imagery extracted from the profile lives in `apps/web/public/`:
-
-- `public/images/` — hero/section photos (`hero-team`, `energy-platform`, `refinery`, `tools-blueprint`)
-- `public/clients/` — client logo tiles (`client-01.jpg` … `client-11.jpg`), rendered as a logo wall on the home and projects pages
+- Staff guide: [`docs/editor-guide.md`](docs/editor-guide.md)
+- Design & decisions: [`docs/cms-spec.md`](docs/cms-spec.md)
+- [`apps/web/src/data/company.ts`](apps/web/src/data/company.ts) is now only the seed
+  source for a fresh database; editing it does not change the live site.
 
 ## Continuous Integration
 
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull
 request to `main`. It installs dependencies with `npm ci`, generates the Prisma client,
-and builds both the API and the web app. No database is required for the build.
+and builds both the API and the web app. No database or running API is required for the
+build (pages fill in from the API on their first revalidation).
 
 ## License
 

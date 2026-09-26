@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import type { Settings } from '@/lib/cms';
 
-export function CTASection() {
+export function CTASection({ cta }: { cta?: Settings['cta'] }) {
+  if (!cta) return null;
   return (
     <section className="section">
       <div className="container">
@@ -9,22 +11,20 @@ export function CTASection() {
           <div className="absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-gold/5" />
           <div className="relative">
             <h2 className="text-3xl font-extrabold text-white md:text-4xl">
-              Ready to power your next project?
+              {cta.title}
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-charcoal-100/70">
-              Let&apos;s deploy smart, sustainable, and reliable solutions
-              tailored to your needs — from homes and offices to rural
-              communities.
+              {cta.body}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/contact" className="btn-primary">
-                Get a Free Consultation
+              <Link href={cta.primaryCta.href} className="btn-primary">
+                {cta.primaryCta.label}
               </Link>
               <Link
-                href="/services"
+                href={cta.secondaryCta.href}
                 className="inline-flex items-center justify-center rounded-md border-2 border-white/30 px-6 py-3 font-semibold text-white transition hover:border-gold hover:text-gold"
               >
-                Explore Services
+                {cta.secondaryCta.label}
               </Link>
             </div>
           </div>

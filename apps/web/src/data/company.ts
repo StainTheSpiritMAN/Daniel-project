@@ -1,7 +1,9 @@
 /**
- * Single source of truth for all site content, transcribed from the
- * Suburban Integrated Services Limited corporate profile brochure.
- * Edit here to change copy across the whole site.
+ * Original site content, transcribed from the corporate profile brochure.
+ *
+ * The live site now reads everything from the CMS (edit it at /admin). This
+ * file is only the seed source for a fresh database — see
+ * apps/api/prisma/seed.ts. Changing it does not change the live site.
  */
 
 export const company = {
@@ -279,11 +281,3 @@ export const clientLogos: string[] = Array.from(
   { length: 11 },
   (_, i) => `/clients/client-${String(i + 1).padStart(2, '0')}.jpg`,
 );
-
-export const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-  { href: '/services', label: 'Services' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/contact', label: 'Contact' },
-];

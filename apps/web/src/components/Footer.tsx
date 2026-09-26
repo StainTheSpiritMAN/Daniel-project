@@ -1,17 +1,24 @@
 import Link from 'next/link';
 import { Logo } from './Logo';
 import { NewsletterForm } from './NewsletterForm';
-import { company, navLinks, services } from '@/data/company';
+import { navLinks } from '@/lib/navigation';
+import type { Service, Settings } from '@/lib/cms';
 
-export function Footer() {
-  const year = 2025;
+export function Footer({
+  company,
+  services,
+}: {
+  company?: Settings['company'];
+  services: Service[];
+}) {
+  const year = new Date().getFullYear();
   return (
     <footer className="bg-charcoal-900 text-charcoal-100">
       <div className="container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Logo light />
+          <Logo light tagline={company?.tagline ?? ''} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-charcoal-100/70">
-            {company.intro}
+            {company?.intro}
           </p>
         </div>
 
@@ -57,8 +64,8 @@ export function Footer() {
           </h4>
           <NewsletterForm />
           <div className="mt-5 space-y-1 text-sm text-charcoal-100/70">
-            <p>{company.phones.join(' · ')}</p>
-            <p>{company.emails[0]}</p>
+            <p>{company?.phones.join(' · ')}</p>
+            <p>{company?.emails[0]}</p>
           </div>
         </div>
       </div>
@@ -66,9 +73,9 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="container flex flex-col items-center justify-between gap-2 py-5 text-xs text-charcoal-100/60 md:flex-row">
           <p>
-            © {year} {company.name}. All rights reserved.
+            © {year} {company?.name}. All rights reserved.
           </p>
-          <p>{company.address}</p>
+          <p>{company?.address}</p>
         </div>
       </div>
     </footer>

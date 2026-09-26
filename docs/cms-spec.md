@@ -1,6 +1,6 @@
 # Suburban Integrated Services — Custom CMS Specification
 
-**Status:** Draft for approval · **Last updated:** 2026-08-01
+**Status:** Phases 1–5 implemented (branch `feat/cms`); Phase 6 (VPS deploy) pending §14 answers · **Last updated:** 2026-09-26
 **Decisions locked:** Custom CMS on the existing NestJS API (`apps/api`) · Admin UI inside the Next.js app (`apps/web`) · VPS deployment · NestJS kept as the single backend.
 
 ---
@@ -250,7 +250,17 @@ Each phase leaves `main` deployable. Estimated effort: phases 1–2 ≈ 2 days, 
 
 ---
 
-## 14. Open questions (answer before Phase 1)
+## 14. Implementation notes (deviations from this spec)
+
+- **API prefix** stays `/api` (not `/api/v1`) to avoid breaking the existing contact/newsletter routes.
+- **Extra settings keys** so staff can edit *all* copy, not only the §3.4 list: `home`, `servicesPage`, `projectsPage`, `contactPage`, `cta` (page banners, section headings, CTA banner, header/section images, per-page meta descriptions).
+- **Hero** stores `videoId` (MP4) and an optional `videoWebmId`; the poster falls back to an ffmpeg-extracted frame.
+- **Contact submissions** reuse the existing `ContactMessage` model (status `NEW/READ/ARCHIVED` instead of `readAt`); IP and user agent are now recorded.
+- **Client logos** are seeded as "Client 01…11" because the brochure logos are not labelled — staff should rename them.
+- **Revalidation**: measured at ~0.1 s from publish to live on `next start`. Builds succeed without the API (sections render empty until the first revalidation), so the API should be up before `next build` on the server.
+- **Tests**: verified with scripted API smoke tests and a Playwright run of the admin flows; an automated e2e suite in the repo is still to do.
+
+## 15. Open questions (answer before Phase 6)
 
 1. **Domain + VPS provider/specs** — need final domain for CORS/TLS and a box (2 vCPU / 4 GB RAM / 40 GB disk is comfortable).
 2. **Email delivery** — should contact submissions also notify by email? If yes: SMTP provider/credentials (v1 can be inbox-only).
