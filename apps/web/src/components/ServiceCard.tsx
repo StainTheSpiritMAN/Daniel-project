@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { InlineText } from './RichText';
 import type { Service } from '@/lib/cms';
 import { serviceIcon, ArrowIcon } from './Icons';
 
@@ -14,7 +15,7 @@ export function ServiceCard({ service }: { service: Service }) {
       </span>
       <h3 className="text-lg font-bold text-charcoal-900">{service.title}</h3>
       <p className="mt-2 flex-1 text-sm leading-relaxed text-charcoal-700">
-        {service.summary}
+        <InlineText text={service.summary} links={false} />
       </p>
       <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-gold-700">
         Learn more

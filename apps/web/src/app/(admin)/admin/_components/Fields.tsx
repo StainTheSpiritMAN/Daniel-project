@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api, type Media } from '../_lib/api';
 import type { Field } from '../_lib/schema';
+import { FormattedInput } from './FormattedInput';
 import { MediaLibrary, MediaThumb } from './MediaLibrary';
 import { Modal } from './ui';
 
@@ -102,7 +103,16 @@ function FieldInput({
       return (
         <div>
           <Label field={field} count={{ n: s.length, max }} />
-          {field.type === 'textarea' ? (
+          {field.type !== 'slug' && field.format ? (
+            <FormattedInput
+              className={`adm-input ${invalid}`}
+              value={s}
+              onChange={onChange}
+              mode={field.format}
+              multiline={field.type === 'textarea'}
+              rows={field.type === 'textarea' ? field.rows : undefined}
+            />
+          ) : field.type === 'textarea' ? (
             <textarea
               className={`adm-input ${invalid}`}
               rows={field.rows ?? 3}
@@ -153,7 +163,17 @@ function FieldInput({
               return (
                 <div key={i}>
                   <div className="flex items-start gap-2">
-                    {field.type === 'list' && field.multiline ? (
+                    {field.type === 'list' && field.format ? (
+                      <div className="min-w-0 flex-1">
+                        <FormattedInput
+                          className={common.className}
+                          value={item}
+                          onChange={(next) => update(items.map((x, j) => (j === i ? next : x)))}
+                          mode={field.format}
+                          multiline={!!field.multiline}
+                        />
+                      </div>
+                    ) : field.type === 'list' && field.multiline ? (
                       <textarea rows={4} {...common} />
                     ) : (
                       <input type={field.type === 'emails' ? 'email' : 'text'} {...common} />

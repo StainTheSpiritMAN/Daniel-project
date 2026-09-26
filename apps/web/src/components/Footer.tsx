@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { InlineText } from './RichText';
 import { Logo } from './Logo';
 import { NewsletterForm } from './NewsletterForm';
 import { navLinks } from '@/lib/navigation';
@@ -21,7 +22,7 @@ export function Footer({
         <div>
           <Logo light tagline={company?.tagline ?? ''} image={logo} name={company?.name} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-charcoal-100/70">
-            {company?.intro}
+            <InlineText text={company?.intro} />
           </p>
         </div>
 

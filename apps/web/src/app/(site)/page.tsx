@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { InlineText, RichText } from '@/components/RichText';
 import Image from 'next/image';
 import { SectionHeading } from '@/components/SectionHeading';
 import { ServiceCard } from '@/components/ServiceCard';
@@ -77,7 +78,7 @@ export default async function HomePage() {
                 <Headline hero={hero} />
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-charcoal-100/75">
-                {hero.subtext}
+                <InlineText text={hero.subtext} />
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <Link href={hero.primaryCta.href} className="btn-primary">
@@ -123,7 +124,7 @@ export default async function HomePage() {
               />
               <div className="mt-5 space-y-4 text-charcoal-700">
                 {home.aboutParagraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
+                  <RichText key={i} text={p} />
                 ))}
               </div>
               <Link
@@ -141,7 +142,7 @@ export default async function HomePage() {
                 >
                   <h3 className="font-bold text-charcoal-900">{v.title}</h3>
                   <p className="mt-1 text-sm text-charcoal-700">
-                    {v.description}
+                    <InlineText text={v.description} />
                   </p>
                 </div>
               ))}
@@ -175,13 +176,11 @@ export default async function HomePage() {
           <div className="container grid gap-6 md:grid-cols-2">
             <div className="rounded-2xl bg-gold p-8 text-on-gold md:p-10">
               <h3 className="text-2xl font-extrabold">Our Mission</h3>
-              <p className="mt-4 leading-relaxed">{missionVision.mission}</p>
+              <RichText text={missionVision.mission} className="mt-4 leading-relaxed" />
             </div>
             <div className="rounded-2xl bg-charcoal-900 p-8 text-white md:p-10">
               <h3 className="text-2xl font-extrabold text-gold">Our Vision</h3>
-              <p className="mt-4 leading-relaxed text-charcoal-100/80">
-                {missionVision.vision}
-              </p>
+              <RichText text={missionVision.vision} className="mt-4 leading-relaxed text-charcoal-100/80" />
             </div>
           </div>
         </section>
@@ -230,7 +229,7 @@ export default async function HomePage() {
                           {point.title}
                         </h3>
                         <p className="mt-1 text-sm text-charcoal-700">
-                          {point.description}
+                          <InlineText text={point.description} />
                         </p>
                       </div>
                     </div>

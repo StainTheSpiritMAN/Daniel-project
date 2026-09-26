@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RichText } from '@/components/RichText';
 import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
 import { ClientLogos } from '@/components/ClientLogos';
@@ -44,9 +45,7 @@ export default async function ProjectsPage() {
                     {project.title}
                   </h3>
                   {project.description && (
-                    <p className="mt-2 text-sm leading-relaxed text-charcoal-700">
-                      {project.description}
-                    </p>
+                    <RichText text={project.description} className="mt-2 text-sm leading-relaxed text-charcoal-700" />
                   )}
                 </div>
               ))}

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { InlineText, RichText } from '@/components/RichText';
 import Image from 'next/image';
 import { SectionHeading } from '@/components/SectionHeading';
 import { CTASection } from '@/components/CTASection';
@@ -61,7 +62,7 @@ export default async function AboutPage() {
             <div className="container grid gap-12 lg:grid-cols-2 lg:items-center">
               <div className="space-y-5 leading-relaxed text-charcoal-700">
                 {about.paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
+                  <RichText key={i} text={p} />
                 ))}
               </div>
               {aboutImage && (
@@ -89,9 +90,7 @@ export default async function AboutPage() {
                   <h3 className="text-xl font-bold text-charcoal-900">
                     {block.title}
                   </h3>
-                  <p className="mt-3 leading-relaxed text-charcoal-700">
-                    {block.body}
-                  </p>
+                  <RichText text={block.body} className="mt-3 leading-relaxed text-charcoal-700" />
                 </div>
               ))}
             </div>
@@ -111,7 +110,7 @@ export default async function AboutPage() {
                   className="bg-charcoal-900 text-gold"
                 />
                 <p className="mt-5 text-lg font-bold italic">
-                  “{ceo.thankYou}”
+                  “<InlineText text={ceo.thankYou} />”
                 </p>
                 <p className="mt-6 font-extrabold">{ceo.name}</p>
                 <p className="text-sm font-medium">{ceo.title}</p>
@@ -125,7 +124,7 @@ export default async function AboutPage() {
               />
               <div className="mt-5 space-y-4 leading-relaxed text-charcoal-700">
                 {ceo.statement.map((p, i) => (
-                  <p key={i}>{p}</p>
+                  <RichText key={i} text={p} />
                 ))}
               </div>
             </div>
@@ -139,15 +138,11 @@ export default async function AboutPage() {
           <div className="container grid gap-6 md:grid-cols-2">
             <div className="rounded-2xl bg-white p-8 ring-1 ring-charcoal-100">
               <h3 className="text-2xl font-extrabold text-gold-700">Mission</h3>
-              <p className="mt-4 leading-relaxed text-charcoal-700">
-                {missionVision.mission}
-              </p>
+              <RichText text={missionVision.mission} className="mt-4 leading-relaxed text-charcoal-700" />
             </div>
             <div className="rounded-2xl bg-white p-8 ring-1 ring-charcoal-100">
               <h3 className="text-2xl font-extrabold text-gold-700">Vision</h3>
-              <p className="mt-4 leading-relaxed text-charcoal-700">
-                {missionVision.vision}
-              </p>
+              <RichText text={missionVision.vision} className="mt-4 leading-relaxed text-charcoal-700" />
             </div>
           </div>
         </section>
@@ -176,7 +171,7 @@ export default async function AboutPage() {
                     {v.title}
                   </h3>
                   <p className="mt-1 text-sm text-charcoal-700">
-                    {v.description}
+                    <InlineText text={v.description} />
                   </p>
                 </div>
               ))}
@@ -214,7 +209,7 @@ export default async function AboutPage() {
                   </div>
                   <div className="space-y-3 text-sm leading-relaxed text-charcoal-700 md:col-span-3">
                     {m.bio.map((p, i) => (
-                      <p key={i}>{p}</p>
+                      <RichText key={i} text={p} />
                     ))}
                   </div>
                 </div>

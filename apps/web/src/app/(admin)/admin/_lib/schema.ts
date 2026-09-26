@@ -7,12 +7,14 @@ import { PRESETS } from '@/lib/theme';
  */
 
 type Base = { name: string; label: string; help?: string; required?: boolean };
+/** Light formatting: "block" allows paragraphs and lists, "inline" only bold/italic/links. */
+type Format = { format?: 'block' | 'inline' };
 
 export type Field =
-  | (Base & { type: 'text'; max: number; placeholder?: string })
-  | (Base & { type: 'textarea'; max: number; rows?: number })
+  | (Base & Format & { type: 'text'; max: number; placeholder?: string })
+  | (Base & Format & { type: 'textarea'; max: number; rows?: number })
   | (Base & { type: 'slug'; max: number; from: string })
-  | (Base & { type: 'list'; max: number; maxItems: number; itemLabel: string; multiline?: boolean })
+  | (Base & Format & { type: 'list'; max: number; maxItems: number; itemLabel: string; multiline?: boolean })
   | (Base & { type: 'media'; kind: 'IMAGE' | 'VIDEO'; hint?: string })
   | (Base & { type: 'group'; fields: Field[] })
   | (Base & { type: 'repeater'; maxItems: number; itemLabel: string; fields: Field[] })
@@ -20,10 +22,10 @@ export type Field =
   | (Base & { type: 'select'; options: { value: string; label: string }[] })
   | (Base & { type: 'color' });
 
-const text = (name: string, label: string, max: number, extra: Partial<Base> & { placeholder?: string } = {}): Field => ({
+const text = (name: string, label: string, max: number, extra: Partial<Base> & Format & { placeholder?: string } = {}): Field => ({
   type: 'text', name, label, max, required: true, ...extra,
 });
-const area = (name: string, label: string, max: number, extra: Partial<Base> & { rows?: number } = {}): Field => ({
+const area = (name: string, label: string, max: number, extra: Partial<Base> & Format & { rows?: number } = {}): Field => ({
   type: 'textarea', name, label, max, required: true, ...extra,
 });
 const image = (name: string, label: string, extra: Partial<Base> & { hint?: string } = {}): Field => ({
@@ -52,7 +54,7 @@ const titleBody = (name: string, label: string): Field => ({
   type: 'group',
   name,
   label,
-  fields: [text('title', 'Title', 120), area('body', 'Text', 1500, { rows: 4 })],
+  fields: [text('title', 'Title', 120), area('body', 'Text', 1500, { rows: 4, format: 'block' })],
 });
 const metaDescription = area('metaDescription', 'Search engine description', 300, {
   required: false,
@@ -87,8 +89,8 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
         type: 'slug', name: 'slug', label: 'Web address', max: 80, from: 'title', required: true,
         help: 'Used for links like /services#smart-home. Lowercase letters, numbers and dashes.',
       },
-      area('summary', 'Summary', 400, { rows: 3 }),
-      { type: 'list', name: 'items', label: 'Bullet points', itemLabel: 'point', max: 160, maxItems: 12, required: true },
+      area('summary', 'Summary', 400, { rows: 3, format: 'block' }),
+      { type: 'list', name: 'items', label: 'Bullet points', itemLabel: 'point', max: 160, maxItems: 12, required: true, format: 'inline' },
       image('imageId', 'Photo', { hint: 'Landscape, at least 1600px wide (16:9).' }),
     ],
   },
@@ -102,7 +104,7 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
       text('title', 'Project title', 200),
       text('client', 'Client', 120, { help: 'Use a general description (e.g. "Private sector client") if the client may not be named.' }),
       text('year', 'Year', 20, { placeholder: '2025 or 2024/25' }),
-      area('description', 'Short description', 1000, { required: false, rows: 3 }),
+      area('description', 'Short description', 1000, { required: false, rows: 3, format: 'block' }),
     ],
   },
   gallery: {
@@ -139,7 +141,7 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
     fields: [
       text('name', 'Name', 120),
       text('role', 'Role / job title', 160),
-      { type: 'list', name: 'bio', label: 'Biography', itemLabel: 'paragraph', max: 2000, maxItems: 8, multiline: true, required: true },
+      { type: 'list', name: 'bio', label: 'Biography', itemLabel: 'paragraph', max: 2000, maxItems: 8, multiline: true, required: true, format: 'block' },
       image('photoId', 'Photo', { hint: 'Square head-and-shoulders photo. Initials are shown if empty.' }),
     ],
   },
@@ -149,7 +151,7 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
     description: 'Core values on the About page; the first four also appear on the homepage.',
     primary: (r) => String(r.title),
     secondary: (r) => String(r.description),
-    fields: [text('title', 'Value', 60), area('description', 'Description', 240, { rows: 2 })],
+    fields: [text('title', 'Value', 60), area('description', 'Description', 240, { rows: 2, format: 'inline' })],
   },
   'why-us': {
     label: 'Why choose us',
@@ -157,7 +159,7 @@ export const COLLECTIONS: Record<string, CollectionConfig> = {
     description: '"Why choose us" points on the homepage.',
     primary: (r) => String(r.title),
     secondary: (r) => String(r.description),
-    fields: [text('title', 'Title', 60), area('description', 'Description', 240, { rows: 2 })],
+    fields: [text('title', 'Title', 60), area('description', 'Description', 240, { rows: 2, format: 'inline' })],
   },
 };
 
@@ -180,7 +182,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
       text('name', 'Company name', 120),
       text('shortName', 'Short name', 80, { help: 'Used in browser tab titles.' }),
       text('tagline', 'Tagline', 80, { help: 'Shown under the logo.' }),
-      area('intro', 'Short introduction', 400, { rows: 3, help: 'Shown in the footer.' }),
+      area('intro', 'Short introduction', 400, { rows: 3, help: 'Shown in the footer.', format: 'inline' }),
       text('website', 'Website address', 120),
       { type: 'emails', name: 'emails', label: 'Email addresses', maxItems: 4, required: true, help: 'The first one is shown in the footer.' },
       { type: 'list', name: 'phones', label: 'Phone numbers', itemLabel: 'phone number', max: 30, maxItems: 4, required: true },
@@ -199,7 +201,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
         type: 'text', name: 'highlight', label: 'Words to highlight in gold', max: 60,
         help: 'Must match part of the headline exactly, e.g. "technology & energy".',
       },
-      area('subtext', 'Text under the headline', 300, { rows: 3 }),
+      area('subtext', 'Text under the headline', 300, { rows: 3, format: 'inline' }),
       link('primaryCta', 'Main button'),
       link('secondaryCta', 'Second button'),
       {
@@ -220,7 +222,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     description: 'Headings and text for the sections below the hero.',
     fields: [
       heading('aboutHeading', '"Who we are" heading'),
-      { type: 'list', name: 'aboutParagraphs', label: '"Who we are" text', itemLabel: 'paragraph', max: 1200, maxItems: 4, multiline: true, required: true },
+      { type: 'list', name: 'aboutParagraphs', label: '"Who we are" text', itemLabel: 'paragraph', max: 1200, maxItems: 4, multiline: true, required: true, format: 'block' },
       heading('servicesHeading', 'Services heading'),
       heading('whyHeading', '"Why choose us" heading'),
       image('whyImageId', '"Why choose us" photo'),
@@ -232,7 +234,10 @@ export const SETTINGS: Record<string, SettingConfig> = {
     label: 'Mission & vision',
     group: 'Homepage',
     description: 'Shown on the homepage and the About page.',
-    fields: [area('mission', 'Mission', 600, { rows: 4 }), area('vision', 'Vision', 600, { rows: 4 })],
+    fields: [
+      area('mission', 'Mission', 600, { rows: 4, format: 'block' }),
+      area('vision', 'Vision', 600, { rows: 4, format: 'block' }),
+    ],
   },
   about: {
     label: 'About page',
@@ -241,7 +246,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     fields: [
       metaDescription,
       heading('header', 'Page banner'),
-      { type: 'list', name: 'paragraphs', label: 'Company overview', itemLabel: 'paragraph', max: 1200, maxItems: 8, multiline: true, required: true },
+      { type: 'list', name: 'paragraphs', label: 'Company overview', itemLabel: 'paragraph', max: 1200, maxItems: 8, multiline: true, required: true, format: 'block' },
       image('imageId', 'Overview photo'),
       titleBody('consultancy', 'Consultancy block'),
       titleBody('expertise', 'Expertise block'),
@@ -257,8 +262,8 @@ export const SETTINGS: Record<string, SettingConfig> = {
     fields: [
       text('name', 'Name', 120),
       text('title', 'Title', 160),
-      area('thankYou', 'Quote on the card', 200, { rows: 2 }),
-      { type: 'list', name: 'statement', label: 'Statement', itemLabel: 'paragraph', max: 1500, maxItems: 8, multiline: true, required: true },
+      area('thankYou', 'Quote on the card', 200, { rows: 2, format: 'inline' }),
+      { type: 'list', name: 'statement', label: 'Statement', itemLabel: 'paragraph', max: 1500, maxItems: 8, multiline: true, required: true, format: 'block' },
       image('photoId', 'Photo', { hint: 'Square photo. Initials are shown if empty.' }),
     ],
   },
@@ -291,7 +296,7 @@ export const SETTINGS: Record<string, SettingConfig> = {
     description: 'The dark "Ready to power your next project?" banner near the bottom of most pages.',
     fields: [
       text('title', 'Title', 120),
-      area('body', 'Text', 400, { rows: 3 }),
+      area('body', 'Text', 400, { rows: 3, format: 'block' }),
       link('primaryCta', 'Main button'),
       link('secondaryCta', 'Second button'),
     ],

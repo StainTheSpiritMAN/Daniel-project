@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { InlineText, RichText } from '@/components/RichText';
 import Image from 'next/image';
 import { CTASection } from '@/components/CTASection';
 import { PageHeader } from '@/components/PageHeader';
@@ -41,9 +42,7 @@ export default async function ServicesPage() {
                   <h2 className="mt-5 text-2xl font-extrabold text-charcoal-900 md:text-3xl">
                     {service.title}
                   </h2>
-                  <p className="mt-3 leading-relaxed text-charcoal-700">
-                    {service.summary}
-                  </p>
+                  <RichText text={service.summary} className="mt-3 leading-relaxed text-charcoal-700" />
                 </div>
                 <div
                   className={`overflow-hidden rounded-2xl border border-charcoal-100 bg-charcoal-50/50 ${
@@ -67,7 +66,7 @@ export default async function ServicesPage() {
                         <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold-100 text-gold-700">
                           <CheckIcon className="h-3.5 w-3.5" />
                         </span>
-                        <span className="text-charcoal-800">{item}</span>
+                        <span className="text-charcoal-800"><InlineText text={item} /></span>
                       </li>
                     ))}
                   </ul>

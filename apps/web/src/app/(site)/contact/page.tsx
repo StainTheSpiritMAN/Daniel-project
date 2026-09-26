@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { RichText } from '@/components/RichText';
 import { ContactForm } from '@/components/ContactForm';
 import { PageHeader } from '@/components/PageHeader';
 import { getServices, getSettings } from '@/lib/cms';
@@ -40,7 +41,7 @@ export default async function ContactPage() {
             <h2 className="text-2xl font-bold text-charcoal-900">
               {contactPage?.intro.title}
             </h2>
-            <p className="mt-3 text-charcoal-700">{contactPage?.intro.body}</p>
+            <RichText text={contactPage?.intro.body} className="mt-3 text-charcoal-700" />
             <div className="mt-8 space-y-6">
               {details.map((d) => (
                 <div key={d.label}>

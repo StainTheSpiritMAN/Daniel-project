@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Settings } from '@/lib/cms';
+import { RichText } from './RichText';
 
 export function CTASection({ cta }: { cta?: Settings['cta'] }) {
   if (!cta) return null;
@@ -13,9 +14,7 @@ export function CTASection({ cta }: { cta?: Settings['cta'] }) {
             <h2 className="text-3xl font-extrabold text-white md:text-4xl">
               {cta.title}
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-charcoal-100/70">
-              {cta.body}
-            </p>
+            <RichText text={cta.body} className="mx-auto mt-4 max-w-xl text-charcoal-100/70" />
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link href={cta.primaryCta.href} className="btn-primary">
                 {cta.primaryCta.label}
